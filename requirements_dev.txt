@@ -1,0 +1,4 @@
+-r requirements.txt
+
+nose2==0.5.0
+pylint==1.5.4

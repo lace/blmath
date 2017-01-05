@@ -1,0 +1,18 @@
+general:
+  branches:
+    ignore:
+      - /zz.*/  # Don't run tests on deprecated branches.
+
+machine:
+  environment:
+    PYTHONPATH: /usr/local/lib/python2.7/dist-packages
+
+dependencies:
+  override: # Rather than using their autodetected steps, use these instead
+    - rake install_style_config
+    - pip install -r requirements_dev.txt
+
+test:
+  override: # rather than using their autodetected steps, use these instead
+    - rake unittest
+    - rake lint
