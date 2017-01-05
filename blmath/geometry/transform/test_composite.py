@@ -1,5 +1,5 @@
-import numpy as np
 import unittest
+import numpy as np
 from blmath.geometry.transform.composite import CompositeTransform
 
 class TestCompositeTransform(unittest.TestCase):

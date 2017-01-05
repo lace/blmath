@@ -1,5 +1,3 @@
-__all__ = ["barycentric_coordinates_of_projection"]
-
 import numpy as np
 
 def barycentric_coordinates_of_projection(p, q, u, v):

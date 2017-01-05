@@ -1,5 +1,5 @@
-import numpy as np
 import unittest
+import numpy as np
 from blmath.geometry import Polyline
 
 class TestPolyline(unittest.TestCase):
@@ -214,7 +214,3 @@ class TestPolyline(unittest.TestCase):
             np.testing.assert_array_almost_equal(result.v, expected.v)
             np.testing.assert_array_equal(result.e, expected.e)
             np.testing.assert_array_equal(indices, expected_indices)
-
-if __name__ == '__main__': # pragma: no cover
-    import nose2
-    nose2.main()

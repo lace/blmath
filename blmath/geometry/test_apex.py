@@ -1,5 +1,5 @@
-import numpy as np
 import unittest
+import numpy as np
 from blmath.geometry.apex import apex
 from blmath.geometry.apex import farthest
 

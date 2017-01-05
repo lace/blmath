@@ -38,7 +38,7 @@ def orthogonalize(v):
     return np.array(o)
 
 def orthonormalize(v, indices=None):
-    if indices == None:
+    if indices is None:
         indices = range(len(v))
 
     res = orthogonalize(v)

@@ -321,7 +321,3 @@ class TestLineIntersect3D(unittest.TestCase):
         p1, q1 = np.array([[6., 8., 2.], [12., 15., 6.]])
         result = line_intersect3(p0, q0, p1, q1)
         np.testing.assert_array_equal(result, [9., 23./2, 4.])
-
-if __name__ == '__main__': # pragma: no cover
-    import nose2
-    nose2.main()

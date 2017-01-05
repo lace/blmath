@@ -1,5 +1,3 @@
-__all__ = ['find_rigid_transform']
-
 def find_rigid_transform(a, b, visualize=False):
     """
     Args:

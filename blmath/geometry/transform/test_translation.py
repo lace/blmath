@@ -1,6 +1,5 @@
 import unittest
 import numpy as np
-
 from blmath.geometry.transform.translation import translation
 
 class TranslationsTest(unittest.TestCase):
@@ -46,7 +45,3 @@ class TranslationsTest(unittest.TestCase):
 
         np.testing.assert_array_equal(image, expected_image,)
         np.testing.assert_array_equal(translation_factor, expected_translation_factor)
-
-if __name__ == '__main__': # pragma: no cover
-    import nose2
-    nose2.main()

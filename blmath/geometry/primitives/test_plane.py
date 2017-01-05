@@ -219,8 +219,3 @@ class TestPlaneFromPoints(unittest.TestCase):
             np.linalg.norm(plane.normal)
         )
         self.assertTrue(angle % np.pi < 1e-6)
-
-
-if __name__ == '__main__': # pragma: no cover
-    import nose2
-    nose2.main()

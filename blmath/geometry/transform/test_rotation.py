@@ -1,6 +1,5 @@
 import unittest
 import numpy as np
-
 from blmath.geometry.transform.rotation import rotation_from_up_and_look, euler
 
 class TestRotationFromUpAndLook(unittest.TestCase):
@@ -98,8 +97,3 @@ class TestEuler(unittest.TestCase):
         np.testing.assert_array_almost_equal(euler([0, 0, 2*np.pi], units='rad'), np.eye(3))
 
     # Really should write some tests for composition...
-
-if __name__ == '__main__': # pragma: no cover
-    import nose2
-    nose2.main()
-

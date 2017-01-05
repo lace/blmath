@@ -2,7 +2,7 @@ def lchol(A):
     import copy
     import numpy as np
     import scipy.sparse as sp
-    from blmath.numerics.linalg import cholmod
+    from blmath.numerics.linalg import cholmod # pylint: disable=no-name-in-module
 
     # the cholmod port needs 64b data, while scipy sparse is 32b
     A64 = copy.copy(A)
