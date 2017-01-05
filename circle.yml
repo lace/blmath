@@ -5,7 +5,7 @@ general:
 
 machine:
   environment:
-    PYTHONPATH: /usr/local/lib/python2.7/dist-packages
+    PYTHONPATH: /usr/local/lib/python2.7/dist-packages:/usr/lib/python2.7/dist-packages
 
 dependencies:
   override: # Rather than using their autodetected steps, use these instead

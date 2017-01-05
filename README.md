@@ -3,6 +3,22 @@ blmath
 
 A collection of math related utilities used by many bits of BodyLabs code.
 
+Requirements
+------------
+On macOS:
+
+    brew install homebrew/science/suite-sparse
+    brew install homebrew/science/opencv --without-numpy
+
+On Linux:
+
+    sudo apt-get install python-opencv libsuitesparse-dev
+
+On windows:
+
+TODO: Windows install nstructions
+
+
 blmath.numerics
 ---------------
 
