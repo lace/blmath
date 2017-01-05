@@ -9,8 +9,10 @@ machine:
 
 dependencies:
   override: # Rather than using their autodetected steps, use these instead
+    - sudo apt-get update; sudo apt-get install python-opencv suitesparse
     - rake install_style_config
     - pip install -r requirements_dev.txt
+    - python setup.py install
 
 test:
   override: # rather than using their autodetected steps, use these instead
