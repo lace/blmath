@@ -1,3 +1,5 @@
 numpy>=1.10.1
 scipy>=0.14.1
 scikit-learn>=0.17.1
+baiji>=2.5.3
+baiji-serialization>=1.0.2

@@ -5,47 +5,58 @@ from blmath.geometry.transform.composite import CompositeTransform
 class TestCompositeTransform(unittest.TestCase):
 
     def setUp(self):
-        from bodylabs.mesh.shapes import create_cube
-        self.cube = create_cube([1., 0., 0.], 4.)
+        # Create a cube. Since CompositeTransform just works on verticies,
+        # we don't need a full lace.mesh object.
+        size = np.repeat(4., 3)
+        origin = [1., 0., 0.]
+        lower_base_plane = np.array([
+            # Lower base plane
+            origin,
+            origin + np.array([size[0], 0, 0]),
+            origin + np.array([size[0], 0, size[2]]),
+            origin + np.array([0, 0, size[2]]),
+        ])
+        upper_base_plane = lower_base_plane + np.array([0, size[1], 0])
+        self.cube_v = np.vstack([lower_base_plane, upper_base_plane])
 
     def test_translate(self):
         transform = CompositeTransform()
         transform.translate(np.array([8., 6., 7.]))
 
         # Sanity checking.
-        np.testing.assert_array_equal(self.cube.v[0], [1., 0., 0.])
-        np.testing.assert_array_equal(self.cube.v[6], [5., 4., 4.])
+        np.testing.assert_array_equal(self.cube_v[0], [1., 0., 0.])
+        np.testing.assert_array_equal(self.cube_v[6], [5., 4., 4.])
 
-        self.cube.v = transform(self.cube.v)
+        self.cube_v = transform(self.cube_v)
 
-        np.testing.assert_array_equal(self.cube.v[0], [9., 6., 7.])
-        np.testing.assert_array_equal(self.cube.v[6], [13., 10., 11.])
+        np.testing.assert_array_equal(self.cube_v[0], [9., 6., 7.])
+        np.testing.assert_array_equal(self.cube_v[6], [13., 10., 11.])
 
     def test_translate_by_list(self):
         transform = CompositeTransform()
         transform.translate([8., 6., 7.])
 
         # Sanity checking.
-        np.testing.assert_array_equal(self.cube.v[0], [1., 0., 0.])
-        np.testing.assert_array_equal(self.cube.v[6], [5., 4., 4.])
+        np.testing.assert_array_equal(self.cube_v[0], [1., 0., 0.])
+        np.testing.assert_array_equal(self.cube_v[6], [5., 4., 4.])
 
-        self.cube.v = transform(self.cube.v)
+        self.cube_v = transform(self.cube_v)
 
-        np.testing.assert_array_equal(self.cube.v[0], [9., 6., 7.])
-        np.testing.assert_array_equal(self.cube.v[6], [13., 10., 11.])
+        np.testing.assert_array_equal(self.cube_v[0], [9., 6., 7.])
+        np.testing.assert_array_equal(self.cube_v[6], [13., 10., 11.])
 
     def test_scale(self):
         transform = CompositeTransform()
         transform.scale(10.)
 
         # Sanity checking.
-        np.testing.assert_array_equal(self.cube.v[0], [1., 0., 0.])
-        np.testing.assert_array_equal(self.cube.v[6], [5., 4., 4.])
+        np.testing.assert_array_equal(self.cube_v[0], [1., 0., 0.])
+        np.testing.assert_array_equal(self.cube_v[6], [5., 4., 4.])
 
-        self.cube.v = transform(self.cube.v)
+        self.cube_v = transform(self.cube_v)
 
-        np.testing.assert_array_equal(self.cube.v[0], [10., 0., 0.])
-        np.testing.assert_array_equal(self.cube.v[6], [50., 40., 40.])
+        np.testing.assert_array_equal(self.cube_v[0], [10., 0., 0.])
+        np.testing.assert_array_equal(self.cube_v[6], [50., 40., 40.])
 
     def test_translate_then_scale(self):
         transform = CompositeTransform()
@@ -53,13 +64,13 @@ class TestCompositeTransform(unittest.TestCase):
         transform.scale(10.)
 
         # Sanity checking.
-        np.testing.assert_array_equal(self.cube.v[0], [1., 0., 0.])
-        np.testing.assert_array_equal(self.cube.v[6], [5., 4., 4.])
+        np.testing.assert_array_equal(self.cube_v[0], [1., 0., 0.])
+        np.testing.assert_array_equal(self.cube_v[6], [5., 4., 4.])
 
-        self.cube.v = transform(self.cube.v)
+        self.cube_v = transform(self.cube_v)
 
-        np.testing.assert_array_equal(self.cube.v[0], [90., 60., 70.])
-        np.testing.assert_array_equal(self.cube.v[6], [130., 100., 110.])
+        np.testing.assert_array_equal(self.cube_v[0], [90., 60., 70.])
+        np.testing.assert_array_equal(self.cube_v[6], [130., 100., 110.])
 
     def test_scale_then_translate(self):
         transform = CompositeTransform()
@@ -67,13 +78,13 @@ class TestCompositeTransform(unittest.TestCase):
         transform.translate(np.array([8., 6., 7.]))
 
         # Sanity checking.
-        np.testing.assert_array_equal(self.cube.v[0], [1., 0., 0.])
-        np.testing.assert_array_equal(self.cube.v[6], [5., 4., 4.])
+        np.testing.assert_array_equal(self.cube_v[0], [1., 0., 0.])
+        np.testing.assert_array_equal(self.cube_v[6], [5., 4., 4.])
 
-        self.cube.v = transform(self.cube.v)
+        self.cube_v = transform(self.cube_v)
 
-        np.testing.assert_array_equal(self.cube.v[0], [18., 6., 7.])
-        np.testing.assert_array_equal(self.cube.v[6], [58., 46., 47.])
+        np.testing.assert_array_equal(self.cube_v[0], [18., 6., 7.])
+        np.testing.assert_array_equal(self.cube_v[6], [58., 46., 47.])
 
     def test_rotate_then_translate(self):
         transform = CompositeTransform()
@@ -98,13 +109,13 @@ class TestCompositeTransform(unittest.TestCase):
         transform.reorient(up=np.array([0., 1., 0.]), look=np.array([-1., 0., 0.]))
 
         # Sanity checking.
-        np.testing.assert_array_equal(self.cube.v[0], [1., 0., 0.])
-        np.testing.assert_array_equal(self.cube.v[6], [5., 4., 4.])
+        np.testing.assert_array_equal(self.cube_v[0], [1., 0., 0.])
+        np.testing.assert_array_equal(self.cube_v[6], [5., 4., 4.])
 
-        self.cube.v = transform(self.cube.v)
+        self.cube_v = transform(self.cube_v)
 
-        np.testing.assert_array_equal(self.cube.v[0], [0., 0., -1.])
-        np.testing.assert_array_equal(self.cube.v[6], [4, 4., -5.])
+        np.testing.assert_array_equal(self.cube_v[0], [0., 0., -1.])
+        np.testing.assert_array_equal(self.cube_v[6], [4, 4., -5.])
 
     def test_rotate(self):
         ways_to_rotate_around_y_a_quarter_turn = [
@@ -117,16 +128,16 @@ class TestCompositeTransform(unittest.TestCase):
         for rot in ways_to_rotate_around_y_a_quarter_turn:
             transform = CompositeTransform()
             transform.rotate(rot)
-            cube = self.cube.copy()
+            cube_v = self.cube_v.copy()
 
             # Sanity checking.
-            np.testing.assert_array_equal(cube.v[0], [1., 0., 0.])
-            np.testing.assert_array_equal(cube.v[6], [5., 4., 4.])
+            np.testing.assert_array_equal(cube_v[0], [1., 0., 0.])
+            np.testing.assert_array_equal(cube_v[6], [5., 4., 4.])
 
-            cube.v = transform(cube.v)
+            cube_v = transform(cube_v)
 
-            np.testing.assert_array_almost_equal(cube.v[0], [0., 0., -1.])
-            np.testing.assert_array_almost_equal(cube.v[6], [4, 4., -5.])
+            np.testing.assert_array_almost_equal(cube_v[0], [0., 0., -1.])
+            np.testing.assert_array_almost_equal(cube_v[6], [4, 4., -5.])
 
     def test_reverse_transforms(self):
         transforms = [CompositeTransform() for _ in range(5)]
@@ -143,10 +154,10 @@ class TestCompositeTransform(unittest.TestCase):
 
         for transform in transforms:
             # Sanity checking.
-            np.testing.assert_array_equal(self.cube.v[0], [1., 0., 0.])
-            np.testing.assert_array_equal(self.cube.v[6], [5., 4., 4.])
+            np.testing.assert_array_equal(self.cube_v[0], [1., 0., 0.])
+            np.testing.assert_array_equal(self.cube_v[6], [5., 4., 4.])
 
-            transformed = transform(self.cube.v)
+            transformed = transform(self.cube_v)
 
             untransformed_v = transform(transformed, reverse=True)
 

@@ -1,6 +1,6 @@
 import numpy as np
-import cv2
 from sklearn.decomposition import PCA
+import cv2
 from blmath.geometry.transform.translation import translation
 
 def rotate_to_xz_plane(points):
