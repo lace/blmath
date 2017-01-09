@@ -61,9 +61,8 @@ class CoordinateManager(object):
         self.tags_to_indices[name] = len(self._transform.transforms)
 
     def do_transform(self, points_or_mesh, from_tag, to_tag):
-        from lace.mesh import Mesh
-
-        if isinstance(points_or_mesh, Mesh):
+        from copy import copy
+        if hasattr(points_or_mesh, 'v'):
             points = points_or_mesh.v
             # Can't run the transform if there are no vertices.
             if points is None:
@@ -86,8 +85,8 @@ class CoordinateManager(object):
             from_range = to_index, from_index
             result_points = self._transform(points, from_range=from_range, reverse=True)
 
-        if isinstance(points_or_mesh, Mesh):
-            result_mesh = points_or_mesh.copy()
+        if hasattr(points_or_mesh, 'v'):
+            result_mesh = copy(points_or_mesh)
             result_mesh.v = result_points
             return result_mesh
         else:

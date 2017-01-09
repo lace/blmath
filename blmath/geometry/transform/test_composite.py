@@ -2,22 +2,25 @@ import unittest
 import numpy as np
 from blmath.geometry.transform.composite import CompositeTransform
 
+def create_cube_verts(origin, size):
+    # Create a cube. Since CompositeTransform just works on verticies,
+    # we don't need a full lace.mesh object.
+    origin = np.asarray(origin)
+    size = np.repeat(size, 3)
+    lower_base_plane = np.array([
+        # Lower base plane
+        origin,
+        origin + np.array([size[0], 0, 0]),
+        origin + np.array([size[0], 0, size[2]]),
+        origin + np.array([0, 0, size[2]]),
+    ])
+    upper_base_plane = lower_base_plane + np.array([0, size[1], 0])
+    return np.vstack([lower_base_plane, upper_base_plane])
+
 class TestCompositeTransform(unittest.TestCase):
 
     def setUp(self):
-        # Create a cube. Since CompositeTransform just works on verticies,
-        # we don't need a full lace.mesh object.
-        size = np.repeat(4., 3)
-        origin = [1., 0., 0.]
-        lower_base_plane = np.array([
-            # Lower base plane
-            origin,
-            origin + np.array([size[0], 0, 0]),
-            origin + np.array([size[0], 0, size[2]]),
-            origin + np.array([0, 0, size[2]]),
-        ])
-        upper_base_plane = lower_base_plane + np.array([0, size[1], 0])
-        self.cube_v = np.vstack([lower_base_plane, upper_base_plane])
+        self.cube_v = create_cube_verts([1., 0., 0.], 4.)
 
     def test_translate(self):
         transform = CompositeTransform()
