@@ -2,7 +2,7 @@ import unittest
 from baiji.serialization import pickle
 import numpy as np
 import scipy.sparse as sp
-from bodylabs.cache.versioned import vc
+from blmath.cache import vc
 from blmath.numerics.linalg import lchol
 
 class TestCholmod(unittest.TestCase):

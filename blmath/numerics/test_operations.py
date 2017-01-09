@@ -1,4 +1,5 @@
 import unittest
+import warnings
 import numpy as np
 
 
@@ -13,7 +14,9 @@ class TestOperations(unittest.TestCase):
         denominator[2, 2] = 0.
         denominator[3, 3] = 0.
 
-        true_divide = np.true_divide(numerator, denominator)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            true_divide = np.true_divide(numerator, denominator)
         safe_divide = zero_safe_divide(numerator, denominator)
         self.assertTrue(np.isinf(true_divide[2, 2]))
         self.assertEqual(safe_divide[2, 2], 0.)

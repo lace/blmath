@@ -9,7 +9,7 @@ class TestCoordinateManager(unittest.TestCase):
         from blmath.geometry.transform.coordinate_manager import CoordinateManager
 
         cube_v = create_cube_verts([1., 0., 0.], 4.)
-        cube_floor_point = np.array([ 3.,  0.,  2.]) # as lace.mesh.floor_point
+        cube_floor_point = np.array([3., 0., 2.]) # as lace.mesh.floor_point
 
         coordinate_manager = CoordinateManager()
         coordinate_manager.tag_as('source')
@@ -68,7 +68,7 @@ class TestCoordinateManager(unittest.TestCase):
         from blmath.geometry.transform.coordinate_manager import CoordinateManager
 
         cube_v = create_cube_verts([1., 0., 0.], 4.)
-        cube_floor_point = np.array([ 3.,  0.,  2.]) # as lace.mesh.floor_point
+        cube_floor_point = np.array([3., 0., 2.]) # as lace.mesh.floor_point
 
         coordinate_manager = CoordinateManager()
         coordinate_manager.tag_as('source')
@@ -100,7 +100,7 @@ class TestCoordinateManager(unittest.TestCase):
         from blmath.geometry.transform.coordinate_manager import CoordinateManager
 
         cube_v = create_cube_verts([1., 0., 0.], 4.)
-        cube_floor_point = np.array([ 3.,  0.,  2.]) # as lace.mesh.floor_point
+        cube_floor_point = np.array([3., 0., 2.]) # as lace.mesh.floor_point
         cube = MagicMock(v=cube_v, other_thing=np.array([-9.]))
 
         coordinate_manager = CoordinateManager()
