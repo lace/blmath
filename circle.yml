@@ -13,7 +13,7 @@ dependencies:
     - sudo cp /usr/lib/python2.7/dist-packages/cv2.so /usr/local/lib/python2.7/dist-packages; sudo cp /usr/lib/python2.7/dist-packages/cv.py /usr/local/lib/python2.7/dist-packages
     - rake install_style_config
     - pip install -r requirements_dev.txt
-    - python setup.py install
+    - pip install -e .
 
 test:
   override: # rather than using their autodetected steps, use these instead
