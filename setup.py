@@ -42,7 +42,11 @@ setup(
     packages=[
         'blmath',
         'blmath/geometry',
+        'blmath/geometry/primitives',
+        'blmath/geometry/transform',
         'blmath/numerics',
+        'blmath/numerics/linalg',
+        'blmath/util',
     ],
     ext_modules=[
         Extension('blmath.numerics.linalg.cholmod',
