@@ -23,4 +23,3 @@ def translation(points, translation_factor=None):
     image = points + translation_factor
 
     return (image, translation_factor)
-
