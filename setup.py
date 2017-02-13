@@ -8,27 +8,50 @@ except (IOError, ImportError):
     print 'warning: pandoc or pypandoc does not seem to be installed; using empty long_description'
 
 import importlib
+import platform
 from pip.req import parse_requirements
-from setuptools import setup
+from setuptools import setup, Extension
+import numpy as np
+
 
 install_requires = parse_requirements('requirements.txt', session=False)
 install_requires = [str(ir.req) for ir in install_requires]
 
+if platform.system() == 'Windows':
+    libs = ['suitesparseconfig', 'liblapack', 'libcolamd', 'libamd', 'libcholmod', 'libblas']
+    include_dirs = [np.get_include()]
+    extra_compile_args = []
+elif platform.system() == 'Darwin':
+    libs = ['suitesparseconfig', 'lapack', 'colamd', 'amd', 'cholmod']
+    include_dirs = [np.get_include()]
+    extra_compile_args = ['-O0', '-fno-inline']
+else:
+    libs = ['lapack', 'colamd', 'amd', 'cholmod']
+    extra_compile_args = ['-O0', '-fno-inline']
+    include_dirs = [np.get_include(), '/usr/include/suitesparse']
+
 setup(
-    name='example',
-    version=importlib.import_module('example').__version__,
+    name='blmath',
+    version=importlib.import_module('blmath').__version__,
     author='Body Labs',
-    author_email='___@bodylabs.com',
-    description='___',
+    author_email='alex@bodylabs.com',
+    description='A collection of math related utilities used by many bits of BodyLabs code',
     long_description=long_description,
-    url='https://github.com/bodylabs/___',
+    url='https://github.com/bodylabs/blmath',
     license='MIT',
     packages=[
-        'example',
-        'example/util',
+        'blmath',
+        'blmath/geometry',
+        'blmath/numerics',
     ],
-    scripts=[
-        'bin/hello',
+    ext_modules=[
+        Extension('blmath.numerics.linalg.cholmod',
+            libraries=libs,
+            include_dirs=include_dirs,
+            sources=['blmath/numerics/linalg/cholmod.c'],
+            depends=['blmath/numerics/linalg/cholmod.c'],
+            extra_compile_args=extra_compile_args,
+        ),
     ],
     install_requires=install_requires,
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers

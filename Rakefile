@@ -41,7 +41,7 @@ task :unittest do
 end
 
 task :lint => :require_style_config do
-  raise unless system "bodylabs-python-style/bin/pylint_test example --min_rating 10.0"
+  raise unless system "bodylabs-python-style/bin/pylint_test blmath --min_rating 10.0"
 end
 
 desc "Remove .pyc files"
