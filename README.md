@@ -1,7 +1,7 @@
 blmath
 ======
 
-A collection of math related utilities used by many bits of BodyLabs code.
+A collection of math related utilities used by many bits of BodyLabs' code.
 
 Requirements
 ------------
@@ -16,7 +16,7 @@ On Linux:
 
 On windows:
 
-TODO: Windows install nstructions
+TODO: Windows install instructions
 
 
 blmath.numerics
@@ -107,6 +107,7 @@ Development
 
 ```sh
 pip install -r requirements_dev.txt
+pip install -e .  # builds the native extension
 rake unittest
 rake lint
 ```
