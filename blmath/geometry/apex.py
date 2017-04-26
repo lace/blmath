@@ -38,7 +38,7 @@ def inflection_points(points, axis, span):
 
     inflection_point_indices = [i for i, b in enumerate(is_inflection_point) if b]
 
-    if len(inflection_point_indices) == 0:
+    if len(inflection_point_indices) == 0: # pylint: disable=len-as-condition
         return []
 
     return points[inflection_point_indices]

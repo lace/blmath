@@ -136,7 +136,7 @@ class Units(object):
         class: If specified, the class of the units must match the class provided.
 
         '''
-        if (from_units is None or not len(from_units)) and (to_units is None or not len(to_units)):
+        if (from_units is None or not len(from_units)) and (to_units is None or not len(to_units)): # pylint: disable=len-as-condition
             return 1.0
         if from_units == to_units:
             return 1.0

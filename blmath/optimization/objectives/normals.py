@@ -1,3 +1,4 @@
+# pylint: disable=arguments-differ, invalid-unary-operand-type
 import numpy as np
 import chumpy as ch
 import scipy.sparse as sp
@@ -31,7 +32,7 @@ except ImportError:
             for i in range(3):
                 blocks[:, i, i] += self.s_inv
 
-            if True:
+            if True: # pylint: disable=using-constant-test
                 data = blocks.ravel()
                 indptr = np.arange(0, (self.v.r.size+1)*3, 3)
                 indices = col(np.arange(0, self.v.r.size))
