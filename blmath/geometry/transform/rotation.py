@@ -16,7 +16,7 @@ def rotate_to_xz_plane(points):
         - p0 is the translation factor (can be None)
 
     '''
-    if points is None or not len(points):
+    if points is None or not len(points): # pylint: disable=len-as-condition
         raise ValueError('Some points are required')
 
     center = np.mean(points, axis=0)

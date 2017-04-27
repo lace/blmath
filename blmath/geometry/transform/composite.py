@@ -112,7 +112,7 @@ class CompositeTransform(object):
             for forward_matrix, reverse_matrix in selected_transforms
         ]
 
-        if not len(matrices):
+        if not len(matrices): # pylint: disable=len-as-condition
             return np.eye(4)
 
         matrix = reduce(np.dot, matrices)

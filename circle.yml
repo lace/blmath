@@ -12,6 +12,7 @@ dependencies:
     - sudo apt-get update; sudo apt-get install python-opencv libsuitesparse-dev
     - sudo cp /usr/lib/python2.7/dist-packages/cv2.so /usr/local/lib/python2.7/dist-packages; sudo cp /usr/lib/python2.7/dist-packages/cv.py /usr/local/lib/python2.7/dist-packages
     - rake install_style_config
+    - pip install -U numpy scipy
     - pip install -r requirements_dev.txt
     - pip install -e .
 

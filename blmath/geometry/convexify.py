@@ -35,7 +35,7 @@ def convexify_planar_curve(polyline, flatten=False, want_vertices=False):
     inv_rotated = np.dot(rotated_hull, R_inv)
 
     if p0 is not None:
-        curve_hull = translation(np.array(inv_rotated), -p0)[0]
+        curve_hull = translation(np.array(inv_rotated), -p0)[0] # pylint: disable=invalid-unary-operand-type
     else:
         curve_hull = inv_rotated
 

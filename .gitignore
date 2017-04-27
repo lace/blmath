@@ -104,3 +104,4 @@ target/
 .env
 
 /bodylabs-python-style/
+/venv/

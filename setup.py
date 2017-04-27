@@ -46,6 +46,8 @@ setup(
         'blmath/geometry/transform',
         'blmath/numerics',
         'blmath/numerics/linalg',
+        'blmath/optimization',
+        'blmath/optimization/objectives',
         'blmath/util',
     ],
     ext_modules=[

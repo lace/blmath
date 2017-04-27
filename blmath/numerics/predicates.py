@@ -41,6 +41,7 @@ def is_empty_arraylike(arraylike):
     Return:
         a boolean indicates if this array is empty
     """
+    # pylint: disable=len-as-condition
     import numpy as np
     if arraylike is None:
         return True

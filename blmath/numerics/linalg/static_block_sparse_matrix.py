@@ -29,6 +29,7 @@ def mask_sparse_matrix(M, row_mask, column_mask):
 class StaticBlockSparseMatrix(object):
 
     def __init__(self, M, row_sparsity=None, column_sparsity=None, sparsity_threshold=0.05):
+        # pylint: disable=len-as-condition
         self.M = M
         self.num_rows, self.num_columns = M.shape
         self.sparsity_threshold = sparsity_threshold*np.max(M.shape)

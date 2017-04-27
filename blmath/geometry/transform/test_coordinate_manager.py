@@ -1,3 +1,4 @@
+# pylint: disable=invalid-unary-operand-type
 import unittest
 import numpy as np
 from blmath.geometry.transform.test_composite import create_cube_verts
