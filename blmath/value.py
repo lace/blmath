@@ -1,4 +1,4 @@
-from bodylabs.util.decorators import cached_property
+from cached_property import cached_property
 
 class Value(object):
     '''
