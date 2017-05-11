@@ -97,9 +97,20 @@ Other modules:
 - [blmath.geometry.segment](segment.py) provides functions for working with
   line segments in n-space.
 
+blmath.value
+------------
+Class for wrapping and manipulating `value`/`units` pairs.
+
 blmath.units
 ------------
 TODO write something here
+
+blmath.console
+------------
+- [blmath.console.input_float](console.py) reads and returns a float from console.
+- [blmath.console.input_value](console.py) combines `units` with a float input from console
+  and returns `Value` object.
+
 
 
 Development
