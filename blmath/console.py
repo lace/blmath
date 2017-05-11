@@ -24,7 +24,7 @@ def input_value(label, units, allow_empty=False):
     allow_empty: When `True`, allows an empty input. The default is to repeat
       until a valid float is entered.
     '''
-    from bodylabs.measurement.models.value import Value
+    from blmath.value import Value
 
     value = input_float(
         prompt='{} ({}): '.format(label, units),
