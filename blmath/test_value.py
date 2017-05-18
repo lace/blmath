@@ -173,11 +173,6 @@ class TestValueDeserialization(unittest.TestCase):
         self.assertEquals(x.value, 25.0)
         self.assertEquals(x.units, 'cm')
 
-    def test_loads_fail(self):
-        x_str = json.dumps({'__value__': {'value': 25.0, 'units': 'cm'}, 'foo': 'bar'})
-        with self.assertRaises(TypeError):
-            json.loads(x_str)
-
     def test_from_json(self):
         x = Value.from_json({'__value__': {'value': 25.0, 'units': 'cm'}})
         self.assertEquals(x.value, 25.0)

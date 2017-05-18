@@ -2,26 +2,14 @@ from baiji.serialization import json
 from baiji.serialization.json import JSONDecoder
 
 class BlmathJSONDecoder(JSONDecoder):
-    SUPPORTED_TYPES = {'value': 'blmath.value.Value'}
     def __init__(self):
         super(BlmathJSONDecoder, self).__init__()
-        self.register(self.decode_supported_types)
+        self.register(self.decode_value)
 
-    def decode_supported_types(self, dct):
-        for k in dct.keys():
-            if k.startswith('__') and k.endswith('__'):
-                type_key = k[2:-2]
-                if type_key not in self.SUPPORTED_TYPES:
-                    raise TypeError("Unsupported Deserialization Type %s" % type_key)
-                if len(dct.keys()) > 1:
-                    raise TypeError("Deserialization type %s should be the only key in the dict" % k)
-                #decode to support object type
-                from baiji.serialization.util.importlib import class_from_str
-                cls = class_from_str(self.SUPPORTED_TYPES[type_key])
-                if hasattr(cls, 'from_json'):
-                    return cls.from_json(dct)
-                else:
-                    return cls(**dct[k])
+    def decode_value(self, dct):
+        from blmath.value import Value
+        if "__value__" in dct.keys():
+            return Value.from_json(dct)
 
 def dump(obj, f, *args, **kwargs):
     return json.dump(obj, f, *args, **kwargs)
