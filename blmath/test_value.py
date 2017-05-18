@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
-from value import Value
-from baiji.serialization import json
+from blmath.value import Value
+from blmath.util import json
 
 class TestValueClass(unittest.TestCase):
     def test_value_initializes_correctly(self):
