@@ -44,4 +44,3 @@ def dumps(*args, **kwargs):
 def loads(*args, **kwargs):
     kwargs.update(decoder=BlmathJSONDecoder())
     return json.loads(*args, **kwargs)
-
