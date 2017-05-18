@@ -1,11 +1,3 @@
-'''
-If an object defines for_json(), it will be serialized as what that returns.
-    class SerializableThing(object):
-        def for_json(self):
-            return "|SerializableThing|"
-
-'''
-
 from baiji.serialization import json
 from baiji.serialization.json import JSONDecoder
 
