@@ -1,3 +1,5 @@
+# FIXME -- move back to core
+
 def apply_correspondence(correspondence_src, correspondence_dst, vertices):
     """
     Apply a correspondence defined between two vertex sets to a new set.
