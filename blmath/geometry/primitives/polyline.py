@@ -43,7 +43,7 @@ class Polyline(object):
         Return a Lines instance with our vertices and edges.
 
         '''
-        from bodylabs.mesh.lines import Lines
+        from lace.lines import Lines
         return Lines(v=self.v, e=self.e)
 
     def to_dict(self, decimals=3):
