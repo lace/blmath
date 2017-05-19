@@ -225,7 +225,7 @@ class PlaneXSectionTests(unittest.TestCase):
         from collections import namedtuple
         MockMesh = namedtuple('MockMesh', ['v', 'f'])
         self.box_mesh = MockMesh(v=np.array([[0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5], [0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5], [0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5]]).T,
-                            f=np.array([[0, 1, 2], [3, 2, 1], [0, 2, 4], [6, 4, 2], [0, 4, 1], [5, 1, 4], [7, 5, 6], [4, 6, 5], [7, 6, 3], [2, 3, 6], [7, 3, 5], [1, 5, 3]]))
+                                 f=np.array([[0, 1, 2], [3, 2, 1], [0, 2, 4], [6, 4, 2], [0, 4, 1], [5, 1, 4], [7, 5, 6], [4, 6, 5], [7, 6, 3], [2, 3, 6], [7, 3, 5], [1, 5, 3]]))
         self.other_box_mesh = MockMesh(v=self.box_mesh.v + np.array([2., 0., 0.]), f=self.box_mesh.f)
         self.two_box_mesh = MockMesh(v=np.vstack((self.box_mesh.v, self.other_box_mesh.v)),
                                      f=np.vstack((self.box_mesh.f, self.other_box_mesh.f + self.box_mesh.v.shape[0])))

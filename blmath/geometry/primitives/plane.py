@@ -300,16 +300,16 @@ class Plane(object):
         cleaned = unique_rows(cleaned)
         v1s, v2s = np.hsplit(cleaned, 2)
         verts = unique_rows(cleaned.reshape((-1, 3)))
-        # E here is in order to 
-        E = np.zeros((verts.shape[0], verts.shape[0]), dtype=np.uint8)
+        # TODO: E here is in order to make deleting entries from the graph O(1) in order to make eulerPath O(n)
+        # E = np.zeros((verts.shape[0], verts.shape[0]), dtype=np.uint8)
         graph = {ii:set() for ii in range(verts.shape[0])}
         def indexof(v, in_this):
             return np.nonzero(np.all(in_this == v, axis=1))[0]
         for ii, v in enumerate(verts):
             for other_v in list(v2s[indexof(v, v1s)]) + list(v1s[indexof(v, v2s)]):
                 neighbors = indexof(other_v, verts)
-                E[ii, neighbors] = 1
-                E[neighbors, ii] = 1
+                # E[ii, neighbors] = 1
+                # E[neighbors, ii] = 1
                 graph[ii].update(neighbors)
                 for jj in neighbors:
                     graph[jj].add(ii)
@@ -322,8 +322,8 @@ class Plane(object):
             # NB: MUTATES graph
             # counting the number of vertices with odd degree
             odd = [x for x in graph.keys() if len(graph[x])&1]
-            odd.append( graph.keys()[0] )
-            if len(odd)>3:
+            odd.append(graph.keys()[0])
+            if len(odd) > 3:
                 return None
             stack = [odd[0]]
             path = []
