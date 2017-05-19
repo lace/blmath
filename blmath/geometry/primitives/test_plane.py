@@ -219,3 +219,81 @@ class TestPlaneFromPoints(unittest.TestCase):
             np.linalg.norm(plane.normal)
         )
         self.assertTrue(angle % np.pi < 1e-6)
+
+class PlaneXSectionTests(unittest.TestCase):
+    def setUp(self):
+        from collections import namedtuple
+        MockMesh = namedtuple('MockMesh', ['v', 'f'])
+        self.box_mesh = MockMesh(v=np.array([[0.5, -0.5, 0.5, -0.5, 0.5, -0.5, 0.5, -0.5], [0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, -0.5], [0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5]]).T,
+                            f=np.array([[0, 1, 2], [3, 2, 1], [0, 2, 4], [6, 4, 2], [0, 4, 1], [5, 1, 4], [7, 5, 6], [4, 6, 5], [7, 6, 3], [2, 3, 6], [7, 3, 5], [1, 5, 3]]))
+        self.other_box_mesh = MockMesh(v=self.box_mesh.v + np.array([2., 0., 0.]), f=self.box_mesh.f)
+        self.two_box_mesh = MockMesh(v=np.vstack((self.box_mesh.v, self.other_box_mesh.v)),
+                                     f=np.vstack((self.box_mesh.f, self.other_box_mesh.f + self.box_mesh.v.shape[0])))
+
+
+    def test_mesh_plane_intersection(self):
+        # x-z plane
+        normal = np.array([0., 1., 0.])
+        sample = np.array([0., 0., 0.])
+
+        plane = Plane(sample, normal)
+
+        xsections = plane.mesh_xsections(self.box_mesh)
+        self.assertIsInstance(xsections, list)
+        self.assertEqual(len(xsections), 1)
+        self.assertEqual(len(xsections[0].v), 8)
+        self.assertTrue(xsections[0].closed)
+
+        xsection = plane.mesh_xsection(self.box_mesh)
+        self.assertEqual(len(xsection.v), 8)
+        self.assertTrue(xsection.closed)
+
+    def test_mesh_plane_intersection_with_no_intersection(self):
+        # x-z plane
+        normal = np.array([0., 1., 0.])
+        sample = np.array([0., 5., 0.])
+
+        plane = Plane(sample, normal)
+
+        xsections = plane.mesh_xsections(self.box_mesh)
+        self.assertIsInstance(xsections, list)
+        self.assertEqual(len(xsections), 0)
+
+        xsection = plane.mesh_xsection(self.box_mesh)
+        self.assertIsNone(xsection.v)
+
+    def test_mesh_plane_intersection_wth_two_components(self):
+        # x-z plane
+        normal = np.array([0., 1., 0.])
+        sample = np.array([0., 0., 0.])
+
+        plane = Plane(sample, normal)
+
+        xsections = plane.mesh_xsections(self.two_box_mesh)
+        self.assertIsInstance(xsections, list)
+        self.assertEqual(len(xsections), 2)
+        self.assertEqual(len(xsections[0].v), 8)
+        self.assertTrue(xsections[0].closed)
+        self.assertEqual(len(xsections[1].v), 8)
+        self.assertTrue(xsections[1].closed)
+
+        xsection = plane.mesh_xsection(self.two_box_mesh)
+        self.assertEqual(len(xsection.v), 16)
+        self.assertTrue(xsection.closed)
+
+    def test_mesh_plane_intersection_wth_neighborhood(self):
+        # x-z plane
+        normal = np.array([0., 1., 0.])
+        sample = np.array([0., 0., 0.])
+
+        plane = Plane(sample, normal)
+
+        xsections = plane.mesh_xsections(self.two_box_mesh, neighborhood=np.array([[0., 0., 0.]]))
+        self.assertIsInstance(xsections, list)
+        self.assertEqual(len(xsections), 1)
+        self.assertEqual(len(xsections[0].v), 8)
+        self.assertTrue(xsections[0].closed)
+
+        xsection = plane.mesh_xsection(self.two_box_mesh, neighborhood=np.array([[0., 0., 0.]]))
+        self.assertEqual(len(xsection.v), 8)
+        self.assertTrue(xsection.closed)

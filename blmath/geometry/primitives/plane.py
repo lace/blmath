@@ -19,6 +19,9 @@ class Plane(object):
         self._r0 = point_on_plane
         self._n = unit_normal
 
+    def __repr__(self):
+        return "<Plane of {} through {}>".format(self.normal, self.reference_point)
+
     @classmethod
     def from_points(cls, p1, p2, p3):
         '''
@@ -208,6 +211,19 @@ class Plane(object):
 
     def mesh_xsection(self, m, neighborhood=None):
         '''
+        Backwards compatible.
+        Returns one polyline that may connect supposedly disconnected components.
+        Returns an empty Polyline if there's no intersection.
+        '''
+        from blmath.geometry import Polyline
+
+        components = self.mesh_xsections(m, neighborhood)
+        if len(components) == 0:
+            return Polyline(None)
+        return Polyline(np.vstack([x.v for x in components]), closed=True)
+
+    def mesh_xsections(self, m, neighborhood=None):
+        '''
         Takes a cross section of planar point cloud with a Mesh object.
         Ignore those points which intersect at a vertex - the probability of
         this event is small, and accounting for it complicates the algorithm.
@@ -221,11 +237,7 @@ class Plane(object):
             - neigbhorhood:
                 M x 3 np.array
 
-        Returns a Polyline.
-
-        TODO Return `None` instead of an empty polyline to signal no
-        intersection.
-
+        Returns a list of Polylines.
         '''
         from blmath.geometry import Polyline
 
@@ -271,107 +283,85 @@ class Plane(object):
             es.append(edge_pts)
 
         if any([edge.shape[0] == 0 for edge in es]):
-            return Polyline(None)
+            return []
 
         # Step 3:
-        #   Build and return the verts v and edges e. Dump trash.
+        #   Build and return the verts. Dump trash, string them in order using a euler graph traversal.
         hstacked = np.hstack(es)
         trash = np.isnan(hstacked)
 
         cleaned = hstacked[np.logical_not(trash)].reshape(fs.shape[0], 6)
+
+        def unique_rows(a):
+            a_ = np.ascontiguousarray(a).view(np.dtype((np.void, a.dtype.itemsize * a.shape[1])))
+            _, idx = np.unique(a_, return_index=True)
+            return a[idx]
+
+        cleaned = unique_rows(cleaned)
         v1s, v2s = np.hsplit(cleaned, 2)
+        verts = unique_rows(cleaned.reshape((-1, 3)))
+        # E here is in order to 
+        E = np.zeros((verts.shape[0], verts.shape[0]), dtype=np.uint8)
+        graph = {ii:set() for ii in range(verts.shape[0])}
+        def indexof(v, in_this):
+            return np.nonzero(np.all(in_this == v, axis=1))[0]
+        for ii, v in enumerate(verts):
+            for other_v in list(v2s[indexof(v, v1s)]) + list(v1s[indexof(v, v2s)]):
+                neighbors = indexof(other_v, verts)
+                E[ii, neighbors] = 1
+                E[neighbors, ii] = 1
+                graph[ii].update(neighbors)
+                for jj in neighbors:
+                    graph[jj].add(ii)
+        graph = {k: list(v) for k, v in graph.items()}
 
-        v = np.empty((2 * v1s.shape[0], 3), dtype=v1s.dtype)
-        v[0::2] = v1s
-        v[1::2] = v2s
+        def eulerPath(graph):
+            # Based on code from Przemek Drochomirecki, Krakow, 5 Nov 2006
+            # http://code.activestate.com/recipes/498243-finding-eulerian-path-in-undirected-graph/
+            # Under PSF License
+            # NB: MUTATES graph
+            # counting the number of vertices with odd degree
+            odd = [x for x in graph.keys() if len(graph[x])&1]
+            odd.append( graph.keys()[0] )
+            if len(odd)>3:
+                return None
+            stack = [odd[0]]
+            path = []
+            # main algorithm
+            while stack:
+                v = stack[-1]
+                if graph[v]:
+                    u = graph[v][0]
+                    stack.append(u)
+                    # deleting edge u-v
+                    del graph[u][graph[u].index(v)]
+                    del graph[v][0]
+                else:
+                    path.append(stack.pop())
+            return path
 
-        if neighborhood is None:
-            return Polyline(v, closed=True)
+        components = []
+        while any(graph.values()):
+            # This works because eulerPath mutates the graph as it goes
+            graph = {k: v for k, v in graph.items() if v}
+            component_verts = verts[eulerPath(graph)]
+            if np.all(component_verts[0] == component_verts[-1]):
+                # Because the closed polyline will make that last link:
+                component_verts = np.delete(component_verts, 0, axis=0)
+            components.append(component_verts)
 
-        # FIXME This e is incorrect.
-        # Contains e.g.
-        #   [0, 1], [2, 3], [4, 5], ...
-        # But should contain
-        #   [0, 1], [1, 2], [2, 3], ...
-        # Leaving in place since the code below may depend on it.
-        e = np.array([[i, i + 1] for i in xrange(0, v.shape[0], 2)])
+        if neighborhood is None or len(components) == 1:
+            return [Polyline(v, closed=True) for v in components]
 
         # Step 4 (optional - only if 'neighborhood' is provided):
-        #   Build and return the ordered vertices cmp_v, and the
-        #   edges cmp_e. Get connected components, use a KDTree
-        #   to select the one with minimal distance to 'component'.
-        #   Return the cmp_v and (re-indexed) edge mapping cmp_e.
+        #   BUse a KDTree to select the component with minimal distance to 'neighborhood'.
         from scipy.spatial import cKDTree  # First thought this warning was caused by a pythonpath problem, but it seems more likely that the warning is caused by scipy import hackery. pylint: disable=no-name-in-module
-        from scipy.sparse import csc_matrix
-        from scipy.sparse.csgraph import connected_components
-
-        from bodylabs.mesh.topology.connectivity import remove_redundant_verts
-
-        # get rid of redundancies, or we
-        # overcount connected components
-        v, e = remove_redundant_verts(v, e)
-
-        # connxns:
-        #   sparse matrix of connected components.
-        # ij:
-        #   edges transposed
-        # (connected_components needs these.)
-        ij = np.vstack((
-            e[:, 0].reshape(1, e.shape[0]),
-            e[:, 1].reshape(1, e.shape[0]),
-        ))
-        connxns = csc_matrix((np.ones(len(e)), ij), shape=(len(v), len(v)))
-
-        cmp_N, cmp_labels = connected_components(connxns)
-
-        if cmp_N == 1:
-            # no work to do, bail
-            polyline = Polyline(v, closed=True)
-            # This function used to return (v, e), so we include this
-            # sanity check to make sure the edges match what Polyline uses.
-            # np.testing.assert_all_equal(polyline.e, e)
-            # Hmm, this fails.
-            return polyline
-
-        cmps = np.array([
-            v[np.where(cmp_labels == cmp_i)]
-            for cmp_i in range(cmp_N)
-        ])
 
         kdtree = cKDTree(neighborhood)
 
-        # cmp_N will not be large in
-        # practice, so this loop won't hurt
-        means = np.array([
-            np.mean(kdtree.query(cmps[cmp_i])[0])
-            for cmp_i in range(cmp_N)
-        ])
-
-        which_cmp = np.where(means == np.min(means))[0][0]
-
-        # re-index edge mapping based on which_cmp. necessary
-        # particularly when which_cmp is not contiguous in cmp_labels.
-        which_vs = np.where(cmp_labels == which_cmp)[0]
-        # which_es = np.logical_or(
-        #     np.in1d(e[:, 0], which_vs),
-        #     np.in1d(e[:, 1], which_vs),
-        # )
-
-        vmap = cmp_labels.astype(float)
-        vmap[cmp_labels != which_cmp] = np.nan
-        vmap[cmp_labels == which_cmp] = np.arange(which_vs.size)
-
-        cmp_v = v[which_vs]                         # equivalently, cmp_v = cmp[which_cmp]
-        # cmp_e = vmap[e[which_es]].astype(int)
-
-        polyline = Polyline(cmp_v, closed=True)
-        # This function used to return (cmp_v, cmp_e), so we include this
-        # sanity check to make sure the edges match what Polyline uses.
-        # Remove # this, and probably the code which creates 'vmap', when
-        # we're more confident.
-        # Hmm, this fails.
-        # np.testing.assert_all_equal(polyline.e, cmp_e)
-        return polyline
+        # number of components will not be large in practice, so this loop won't hurt
+        means = [np.mean(kdtree.query(component)[0]) for component in components]
+        return [Polyline(components[np.argmin(means)], closed=True)]
 
 
 def main():

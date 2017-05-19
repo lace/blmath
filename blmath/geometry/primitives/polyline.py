@@ -30,6 +30,18 @@ class Polyline(object):
         self.__dict__['closed'] = closed
         self.v = v
 
+    def __repr__(self):
+        if self.v is not None and len(self.v) != 0:
+            if self.closed:
+                return "<closed Polyline with {} verts>".format(len(self))
+            else:
+                return "<open Polyline with {} verts>".format(len(self))
+        else:
+            return "<Polyline with no verts>"
+
+    def __len__(self):
+        return len(self.v)
+
     def copy(self):
         '''
         Return a copy of this polyline.
