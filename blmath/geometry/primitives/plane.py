@@ -209,6 +209,29 @@ class Plane(object):
         #assert(np.all(self.distance(intersection_points) < 1e-10))
         return intersection_points
 
+    def line_xsection(self, pt, ray):
+        pt = np.asarray(pt).ravel()
+        ray = np.asarray(ray).ravel()
+        assert len(pt) == 3
+        assert len(ray) == 3
+        denom = np.dot(ray, self.normal)
+        if denom == 0:
+            return None # parallel, either coplanar or non-intersecting
+        p = np.dot(self.reference_point - pt, self.normal) / denom
+        return p * ray + pt
+
+    def line_segment_xsection(self, a, b):
+        a = np.asarray(a).ravel()
+        b = np.asarray(b).ravel()
+        assert len(a) == 3
+        assert len(b) == 3
+
+        pt = self.line_xsection(a, b-a)
+        if pt is not None:
+            if np.any(pt < np.min((a, b), axis=0)) or np.any(pt > np.max((a, b), axis=0)):
+                return None
+        return pt
+
     def mesh_xsection(self, m, neighborhood=None):
         '''
         Backwards compatible.
@@ -239,90 +262,58 @@ class Plane(object):
 
         Returns a list of Polylines.
         '''
+        import operator
+        import scipy.sparse as sp
         from blmath.geometry import Polyline
 
-        # Step 1:
-        #   Select those faces that intersect the plane, fs. Also construct
-        #   the signed distances (fs_dists) and normalized signed distances
-        #   (fs_norm_dists) for each such face.
+        # 1: Select those faces that intersect the plane, fs
         sgn_dists = self.signed_distance(m.v)
         which_fs = np.abs(np.sign(sgn_dists)[m.f].sum(axis=1)) != 3
         fs = m.f[which_fs]
-        fs_dists = sgn_dists[fs]
-        fs_norm_dists = np.sign(fs_dists)
 
-        # Step 2:
-        #   Build a length 3 array of edges es. Each es[i] is an np.array
-        #   edge_pts of shape (fs.shape[0], 3). Each vector edge_pts[i, :]
-        #   in edge_pts is an interesection of the plane with the
-        #   fs[i], or [np.nan, np.nan, np.nan].
-        es = []
+        if len(fs) == 0:
+            return [] # Nothing intersects
 
-        import itertools
-        for i, j in itertools.combinations([0, 1, 2], 2):
-            vi = m.v[fs[:, i]]
-            vj = m.v[fs[:, j]]
+        # 2: Find the edges where each of those faces actually cross the plane
+        def edge_from_face(f):
+            face_verts = [
+                [m.v[f[0]], m.v[f[1]]],
+                [m.v[f[1]], m.v[f[2]]],
+                [m.v[f[2]], m.v[f[0]]],
+            ]
+            e = [self.line_segment_xsection(a, b) for a, b in face_verts]
+            e = [x for x in e if x is not None]
+            return e
+        edges = np.vstack([np.hstack(edge_from_face(f)) for f in fs])
 
-            vi_dist = np.absolute(fs_dists[:, i])
-            vj_dist = np.absolute(fs_dists[:, j])
+        # 3: Find the set of unique vertices in `edges`
+        v1s, v2s = np.hsplit(edges, 2)
+        verts = edges.reshape((-1, 3))
+        verts = np.vstack(sorted(verts, key=operator.itemgetter(0, 1, 2)))
+        eps = 1e-15 # the floating point calculation of the intersection locations is not _quite_ exact
+        verts = verts[list(np.sqrt(np.sum(np.diff(verts, axis=0) ** 2, axis=1)) > eps) + [True]]
+        # the True at the end there is because np.diff returns pairwise differences; one less element than the original array
 
-            vi_norm_dist = fs_norm_dists[:, i]
-            vj_norm_dist = fs_norm_dists[:, j]
-
-            # use broadcasting to bulk traverse the edges
-            t = vi_dist/(vi_dist + vj_dist)
-            t = t[:, np.newaxis]
-
-            edge_pts = t * vj + (1 - t) * vi
-
-            # flag interior edge points that have the same sign with [nan, nan, nan].
-            # note also that sum(trash.shape[0] for all i, j) == fs.shape[0], which holds.
-            trash = np.nonzero(vi_norm_dist * vj_norm_dist == +1)[0]
-            edge_pts[trash, :] = np.nan
-
-            es.append(edge_pts)
-
-        if any([edge.shape[0] == 0 for edge in es]):
-            return []
-
-        # Step 3:
-        #   Build and return the verts. Dump trash, string them in order using a euler graph traversal.
-        hstacked = np.hstack(es)
-        trash = np.isnan(hstacked)
-
-        cleaned = hstacked[np.logical_not(trash)].reshape(fs.shape[0], 6)
-
-        def unique_rows(a):
-            a_ = np.ascontiguousarray(a).view(np.dtype((np.void, a.dtype.itemsize * a.shape[1])))
-            _, idx = np.unique(a_, return_index=True)
-            return a[idx]
-
-        cleaned = unique_rows(cleaned)
-        v1s, v2s = np.hsplit(cleaned, 2)
-        verts = unique_rows(cleaned.reshape((-1, 3)))
-        # TODO: E here is in order to make deleting entries from the graph O(1) in order to make eulerPath O(n)
-        # E = np.zeros((verts.shape[0], verts.shape[0]), dtype=np.uint8)
-        graph = {ii:set() for ii in range(verts.shape[0])}
+        # 4: Build the edge adjacency matrix
+        E = sp.dok_matrix((verts.shape[0], verts.shape[0]), dtype=np.bool)
         def indexof(v, in_this):
-            return np.nonzero(np.all(in_this == v, axis=1))[0]
+            return np.nonzero(np.all(np.abs(in_this - v) < eps, axis=1))[0]
         for ii, v in enumerate(verts):
             for other_v in list(v2s[indexof(v, v1s)]) + list(v1s[indexof(v, v2s)]):
                 neighbors = indexof(other_v, verts)
-                # E[ii, neighbors] = 1
-                # E[neighbors, ii] = 1
-                graph[ii].update(neighbors)
-                for jj in neighbors:
-                    graph[jj].add(ii)
-        graph = {k: list(v) for k, v in graph.items()}
+                E[ii, neighbors] = True
+                E[neighbors, ii] = True
 
-        def eulerPath(graph):
+        def eulerPath(E):
             # Based on code from Przemek Drochomirecki, Krakow, 5 Nov 2006
             # http://code.activestate.com/recipes/498243-finding-eulerian-path-in-undirected-graph/
             # Under PSF License
             # NB: MUTATES graph
+            if len(E.nonzero()[0]) == 0:
+                return None
             # counting the number of vertices with odd degree
-            odd = [x for x in graph.keys() if len(graph[x])&1]
-            odd.append(graph.keys()[0])
+            odd = list(np.nonzero(np.bitwise_and(np.sum(E, axis=0), 1))[0])
+            odd.append(np.nonzero(E)[0][0])
             if len(odd) > 3:
                 return None
             stack = [odd[0]]
@@ -330,21 +321,27 @@ class Plane(object):
             # main algorithm
             while stack:
                 v = stack[-1]
-                if graph[v]:
-                    u = graph[v][0]
+                nonzero = np.nonzero(E)
+                nbrs = nonzero[1][nonzero[0] == v]
+                if len(nbrs) > 0:
+                    u = nbrs[0]
                     stack.append(u)
                     # deleting edge u-v
-                    del graph[u][graph[u].index(v)]
-                    del graph[v][0]
+                    E[u, v] = False
+                    E[v, u] = False
                 else:
                     path.append(stack.pop())
             return path
 
+        # 5: Find the paths for each component
         components = []
-        while any(graph.values()):
+        while len(E.nonzero()[0]) > 0:
             # This works because eulerPath mutates the graph as it goes
-            graph = {k: v for k, v in graph.items() if v}
-            component_verts = verts[eulerPath(graph)]
+            path = eulerPath(E)
+            if path is None:
+                raise ValueError("mesh slice has too many odd degree edges; can't find a path along the edge")
+            component_verts = verts[path]
+
             if np.all(component_verts[0] == component_verts[-1]):
                 # Because the closed polyline will make that last link:
                 component_verts = np.delete(component_verts, 0, axis=0)
@@ -353,8 +350,7 @@ class Plane(object):
         if neighborhood is None or len(components) == 1:
             return [Polyline(v, closed=True) for v in components]
 
-        # Step 4 (optional - only if 'neighborhood' is provided):
-        #   BUse a KDTree to select the component with minimal distance to 'neighborhood'.
+        # 6 (optional - only if 'neighborhood' is provided): Use a KDTree to select the component with minimal distance to 'neighborhood'
         from scipy.spatial import cKDTree  # First thought this warning was caused by a pythonpath problem, but it seems more likely that the warning is caused by scipy import hackery. pylint: disable=no-name-in-module
 
         kdtree = cKDTree(neighborhood)

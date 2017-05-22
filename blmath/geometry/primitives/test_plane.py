@@ -230,6 +230,28 @@ class PlaneXSectionTests(unittest.TestCase):
         self.two_box_mesh = MockMesh(v=np.vstack((self.box_mesh.v, self.other_box_mesh.v)),
                                      f=np.vstack((self.box_mesh.f, self.other_box_mesh.f + self.box_mesh.v.shape[0])))
 
+    def test_line_plane_intersection(self):
+        # x-z plane
+        normal = np.array([0., 1., 0.])
+        sample = np.array([0., 0., 0.])
+
+        plane = Plane(sample, normal)
+        self.assertIsNone(plane.line_xsection(pt=[0., -1., 0.], ray=[1., 0., 0.])) # non-intersecting
+        self.assertIsNone(plane.line_xsection(pt=[0., 0., 0.], ray=[1., 0., 0.])) # coplanar
+        np.testing.assert_array_equal(plane.line_xsection(pt=[0., -1., 0.], ray=[0., 1., 0.]), [0., 0., 0.])
+        np.testing.assert_array_equal(plane.line_xsection(pt=[0., -1., 0.], ray=[1., 1., 0.]), [1., 0., 0.])
+
+    def test_line_segment_plane_intersection(self):
+        # x-z plane
+        normal = np.array([0., 1., 0.])
+        sample = np.array([0., 0., 0.])
+
+        plane = Plane(sample, normal)
+        self.assertIsNone(plane.line_segment_xsection([0., -1., 0.], [1., -1., 0.])) # non-intersecting
+        self.assertIsNone(plane.line_segment_xsection([0., 0., 0.], [1., 0., 0.])) # coplanar
+        np.testing.assert_array_equal(plane.line_segment_xsection([0., -1., 0.], [0., 1., 0.]), [0., 0., 0.])
+        np.testing.assert_array_equal(plane.line_segment_xsection([0., -1., 0.], [2., 1., 0.]), [1., 0., 0.])
+        self.assertIsNone(plane.line_segment_xsection([0., 1., 0.], [0., 2., 0.])) # line intersecting, but not in segment
 
     def test_mesh_plane_intersection(self):
         # x-z plane
@@ -243,6 +265,13 @@ class PlaneXSectionTests(unittest.TestCase):
         self.assertEqual(len(xsections), 1)
         self.assertEqual(len(xsections[0].v), 8)
         self.assertTrue(xsections[0].closed)
+
+        self.assertEqual(xsections[0].total_length, 4.0)
+        np.testing.assert_array_equal(xsections[0].v[:, 1], np.zeros((8, )))
+        for a, b in zip(xsections[0].v[0:-1, [0,2]], xsections[0].v[1:, [0,2]]):
+            # Each line changes only one coordinate, and is 0.5 long
+            self.assertEqual(np.sum(a == b), 1)
+            self.assertEqual(np.linalg.norm(a - b), 0.5)
 
         xsection = plane.mesh_xsection(self.box_mesh)
         self.assertEqual(len(xsection.v), 8)
