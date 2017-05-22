@@ -268,7 +268,7 @@ class PlaneXSectionTests(unittest.TestCase):
 
         self.assertEqual(xsections[0].total_length, 4.0)
         np.testing.assert_array_equal(xsections[0].v[:, 1], np.zeros((8, )))
-        for a, b in zip(xsections[0].v[0:-1, [0,2]], xsections[0].v[1:, [0,2]]):
+        for a, b in zip(xsections[0].v[0:-1, [0, 2]], xsections[0].v[1:, [0, 2]]):
             # Each line changes only one coordinate, and is 0.5 long
             self.assertEqual(np.sum(a == b), 1)
             self.assertEqual(np.linalg.norm(a - b), 0.5)
