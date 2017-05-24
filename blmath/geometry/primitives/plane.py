@@ -335,6 +335,7 @@ class Plane(object):
 
         # 5: Find the paths for each component
         components = []
+        components_closed = []
         while len(E.nonzero()[0]) > 0:
             # This works because eulerPath mutates the graph as it goes
             path = eulerPath(E)
@@ -345,10 +346,13 @@ class Plane(object):
             if np.all(component_verts[0] == component_verts[-1]):
                 # Because the closed polyline will make that last link:
                 component_verts = np.delete(component_verts, 0, axis=0)
+                components_closed.append(True)
+            else:
+                components_closed.append(False)
             components.append(component_verts)
 
         if neighborhood is None or len(components) == 1:
-            return [Polyline(v, closed=True) for v in components]
+            return [Polyline(v, closed=closed) for v, closed in zip(components, components_closed)]
 
         # 6 (optional - only if 'neighborhood' is provided): Use a KDTree to select the component with minimal distance to 'neighborhood'
         from scipy.spatial import cKDTree  # First thought this warning was caused by a pythonpath problem, but it seems more likely that the warning is caused by scipy import hackery. pylint: disable=no-name-in-module
