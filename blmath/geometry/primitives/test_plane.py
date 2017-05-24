@@ -231,7 +231,7 @@ class PlaneXSectionTests(unittest.TestCase):
     def double_mesh(self, mesh, shift=[2., 0., 0.]):
         other_mesh = MockMesh(v=mesh.v + np.array(shift), f=mesh.f)
         two_meshes = MockMesh(v=np.vstack((mesh.v, other_mesh.v)),
-                            f=np.vstack((mesh.f, other_mesh.f + mesh.v.shape[0])))
+                              f=np.vstack((mesh.f, other_mesh.f + mesh.v.shape[0])))
         return two_meshes
 
     def test_line_plane_intersection(self):
@@ -303,7 +303,7 @@ class PlaneXSectionTests(unittest.TestCase):
         plane = Plane(sample, normal)
 
         two_box_mesh = self.double_mesh(self.box_mesh)
-             
+
         xsections = plane.mesh_xsections(two_box_mesh)
         self.assertIsInstance(xsections, list)
         self.assertEqual(len(xsections), 2)
@@ -349,7 +349,7 @@ class PlaneXSectionTests(unittest.TestCase):
         xsections = plane.mesh_xsections(open_mesh)
 
         # The removed side is not in the xsection:
-        self.assertFalse(any(np.all(xsections[0].v == [-0.5,  0. , 0.], axis=1)))
+        self.assertFalse(any(np.all(xsections[0].v == [-0.5, 0., 0.], axis=1)))
 
         self.assertIsInstance(xsections, list)
         self.assertEqual(len(xsections), 1)
@@ -382,7 +382,7 @@ class PlaneXSectionTests(unittest.TestCase):
         xsections = plane.mesh_xsections(two_open_meshes)
 
         # The removed side is not in the xsection:
-        self.assertFalse(any(np.all(xsections[0].v == [-0.5,  0. , 0.], axis=1)))
+        self.assertFalse(any(np.all(xsections[0].v == [-0.5, 0., 0.], axis=1)))
 
         self.assertIsInstance(xsections, list)
         self.assertEqual(len(xsections), 2)
