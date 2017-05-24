@@ -312,10 +312,13 @@ class Plane(object):
             if len(E.nonzero()[0]) == 0:
                 return None
             # counting the number of vertices with odd degree
-            odd = list(np.nonzero(np.bitwise_and(np.sum(E, axis=0), 1))[0])
+            odd = list(np.nonzero(np.bitwise_and(np.sum(E, axis=0), 1))[1])
             odd.append(np.nonzero(E)[0][0])
-            if len(odd) > 3:
-                return None
+            # This check is appropriate if there is a single connected component.
+            # Since we're willing to take away one connected component per call,
+            # we skip this check.
+            # if len(odd) > 3:
+            #     return None
             stack = [odd[0]]
             path = []
             # main algorithm
