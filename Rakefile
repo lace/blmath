@@ -1,4 +1,4 @@
-$style_config_version = '1.0.1'
+$style_config_version = '2.1.0'
 
 desc "Install style config"
 task :install_style_config do
