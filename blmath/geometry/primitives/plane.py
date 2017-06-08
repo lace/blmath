@@ -328,14 +328,14 @@ class Plane(object):
             # NB: MUTATES graph
 
             # counting the number of vertices with odd degree
-            odd = [ x for x in graph.keys() if len(graph[x])&1 ]
-            odd.append( graph.keys()[0] )
+            odd = [x for x in graph.keys() if len(graph[x])&1]
+            odd.append(graph.keys()[0])
             # This check is appropriate if there is a single connected component.
             # Since we're willing to take away one connected component per call,
             # we skip this check.
             # if len(odd)>3:
             #     return None
-            stack = [ odd[0] ]
+            stack = [odd[0]]
             path = []
             # main algorithm
             while stack:
