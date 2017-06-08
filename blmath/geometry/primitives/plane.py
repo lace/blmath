@@ -263,7 +263,6 @@ class Plane(object):
         Returns a list of Polylines.
         '''
         import operator
-        import scipy.sparse as sp
         from blmath.geometry import Polyline
 
         # 1: Select those faces that intersect the plane, fs
