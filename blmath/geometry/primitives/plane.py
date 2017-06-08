@@ -263,7 +263,6 @@ class Plane(object):
         Returns a list of Polylines.
         '''
         import operator
-        import scipy.sparse as sp
         from blmath.geometry import Polyline
 
         # 1: Select those faces that intersect the plane, fs
@@ -294,44 +293,62 @@ class Plane(object):
         verts = verts[list(np.sqrt(np.sum(np.diff(verts, axis=0) ** 2, axis=1)) > eps) + [True]]
         # the True at the end there is because np.diff returns pairwise differences; one less element than the original array
 
-        # 4: Build the edge adjacency matrix
-        E = sp.dok_matrix((verts.shape[0], verts.shape[0]), dtype=np.bool)
+        class Graph(object):
+            # A little utility class to build a symmetric graph
+            def __init__(self, size):
+                self.size = size
+                self.d = {}
+            def __len__(self):
+                return len(self.d)
+            def add_edge(self, ii, jj):
+                assert ii >= 0 and ii < self.size
+                assert jj >= 0 and jj < self.size
+                if ii not in self.d:
+                    self.d[ii] = set()
+                if jj not in self.d:
+                    self.d[jj] = set()
+                self.d[ii].add(jj)
+                self.d[jj].add(ii)
+
+        # 4: Build the edge adjacency graph
+        G = Graph(verts.shape[0])
         def indexof(v, in_this):
             return np.nonzero(np.all(np.abs(in_this - v) < eps, axis=1))[0]
         for ii, v in enumerate(verts):
             for other_v in list(v2s[indexof(v, v1s)]) + list(v1s[indexof(v, v2s)]):
                 neighbors = indexof(other_v, verts)
-                E[ii, neighbors] = True
-                E[neighbors, ii] = True
+                for jj in neighbors:
+                    G.add_edge(ii, jj)
 
-        def eulerPath(E):
+        def euler_path(graph):
             # Based on code from Przemek Drochomirecki, Krakow, 5 Nov 2006
             # http://code.activestate.com/recipes/498243-finding-eulerian-path-in-undirected-graph/
             # Under PSF License
             # NB: MUTATES graph
-            if len(E.nonzero()[0]) == 0:
-                return None
+
             # counting the number of vertices with odd degree
-            odd = list(np.nonzero(np.bitwise_and(np.sum(E, axis=0), 1))[1])
-            odd.append(np.nonzero(E)[0][0])
+            odd = [x for x in graph.keys() if len(graph[x])&1]
+            odd.append(graph.keys()[0])
             # This check is appropriate if there is a single connected component.
             # Since we're willing to take away one connected component per call,
             # we skip this check.
-            # if len(odd) > 3:
+            # if len(odd)>3:
             #     return None
             stack = [odd[0]]
             path = []
             # main algorithm
             while stack:
                 v = stack[-1]
-                nonzero = np.nonzero(E)
-                nbrs = nonzero[1][nonzero[0] == v]
-                if len(nbrs) > 0:
-                    u = nbrs[0]
+                if v in graph:
+                    u = graph[v].pop()
                     stack.append(u)
-                    # deleting edge u-v
-                    E[u, v] = False
-                    E[v, u] = False
+                    # deleting edge u-v (v-u already removed by pop)
+                    graph[u].remove(v)
+                    # graph[v].remove(u)
+                    if len(graph[v]) == 0:
+                        del graph[v]
+                    if len(graph[u]) == 0:
+                        del graph[u]
                 else:
                     path.append(stack.pop())
             return path
@@ -339,9 +356,9 @@ class Plane(object):
         # 5: Find the paths for each component
         components = []
         components_closed = []
-        while len(E.nonzero()[0]) > 0:
-            # This works because eulerPath mutates the graph as it goes
-            path = eulerPath(E)
+        while len(G) > 0:
+            # This works because euler_path mutates the graph as it goes
+            path = euler_path(G.d)
             if path is None:
                 raise ValueError("mesh slice has too many odd degree edges; can't find a path along the edge")
             component_verts = verts[path]
