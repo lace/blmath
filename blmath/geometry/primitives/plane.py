@@ -214,6 +214,7 @@ class Plane(object):
         ray = np.asarray(ray).ravel()
         assert len(pt) == 3
         assert len(ray) == 3
+
         denom = np.dot(ray, self.normal)
         if denom == 0:
             return None # parallel, either coplanar or non-intersecting
@@ -228,7 +229,7 @@ class Plane(object):
 
         pt = self.line_xsection(a, b-a)
         if pt is not None:
-            if np.any(pt < np.min((a, b), axis=0)) or np.any(pt > np.max((a, b), axis=0)):
+            if any(np.logical_and(pt > a, pt > b)) or any(np.logical_and(pt < a, pt < b)):
                 return None
         return pt
 
@@ -269,37 +270,34 @@ class Plane(object):
         sgn_dists = self.signed_distance(m.v)
         which_fs = np.abs(np.sign(sgn_dists)[m.f].sum(axis=1)) != 3
         fs = m.f[which_fs]
-
         if len(fs) == 0:
             return [] # Nothing intersects
+        # and edges of those faces
+        es = np.vstack((fs[:,(0,1)], fs[:,(1,2)], fs[:,(2,0)]))
 
         # 2: Find the edges where each of those faces actually cross the plane
-        def edge_from_face(f):
-            face_verts = [
-                [m.v[f[0]], m.v[f[1]]],
-                [m.v[f[1]], m.v[f[2]]],
-                [m.v[f[2]], m.v[f[0]]],
-            ]
-            e = [self.line_segment_xsection(a, b) for a, b in face_verts]
-            e = [x for x in e if x is not None]
-            return e
-        edges = np.vstack([np.hstack(edge_from_face(f)) for f in fs])
+        unique_edges = {tuple(x) for x in np.sort(es, axis=1)}
+        intersections = [self.line_segment_xsection(m.v[u], m.v[v]) for u, v in unique_edges]
+        valid = [x is not None for x in intersections]
+        unique_edges = [x for x, ok in zip(unique_edges, valid) if ok]
+        verts = np.array([x for x in intersections if x is not None])
+        intersection_map = dict(zip(unique_edges, range(len(verts))))
 
-        # 3: Find the set of unique vertices in `edges`
-        v1s, v2s = np.hsplit(edges, 2)
-        verts = edges.reshape((-1, 3))
-        verts = np.vstack(sorted(verts, key=operator.itemgetter(0, 1, 2)))
-        eps = 1e-15 # the floating point calculation of the intersection locations is not _quite_ exact
-        verts = verts[list(np.sqrt(np.sum(np.diff(verts, axis=0) ** 2, axis=1)) > eps) + [True]]
-        # the True at the end there is because np.diff returns pairwise differences; one less element than the original array
+        def edge_from_face(f):
+            e = [tuple(sorted((f[0], f[1]))), tuple(sorted((f[0], f[2]))), tuple(sorted((f[1], f[2])))]
+            return [intersection_map[ii] for ii in e if ii in intersection_map]
+        edges = [edge_from_face(f) for f in fs]
 
         class Graph(object):
-            # A little utility class to build a symmetric graph
+            # A little utility class to build a symmetric graph and calcualate Euler Paths
             def __init__(self, size):
                 self.size = size
                 self.d = {}
             def __len__(self):
                 return len(self.d)
+            def add_edges(self, edges):
+                for u, v in edges:
+                    self.add_edge(u, v)
             def add_edge(self, u, v):
                 assert u >= 0 and u < self.size
                 assert v >= 0 and v < self.size
@@ -322,12 +320,11 @@ class Plane(object):
                 # Based on code from Przemek Drochomirecki, Krakow, 5 Nov 2006
                 # http://code.activestate.com/recipes/498243-finding-eulerian-path-in-undirected-graph/
                 # Under PSF License
-                # NB: MUTATES graph
+                # NB: MUTATES d
 
-                graph = self.d
                 # counting the number of vertices with odd degree
-                odd = [x for x in graph.keys() if len(graph[x])&1]
-                odd.append(graph.keys()[0])
+                odd = [x for x in self.d.keys() if len(self.d[x])&1]
+                odd.append(self.d.keys()[0])
                 if not allow_multiple_connected_components and len(odd)>3:
                     return None
                 stack = [odd[0]]
@@ -335,8 +332,8 @@ class Plane(object):
                 # main algorithm
                 while stack:
                     v = stack[-1]
-                    if v in graph:
-                        u = graph[v].pop()
+                    if v in self.d:
+                        u = self.d[v].pop()
                         stack.append(u)
                         self.remove_edge(u, v)
                     else:
@@ -346,11 +343,7 @@ class Plane(object):
 
         # 4: Build the edge adjacency graph
         G = Graph(verts.shape[0])
-        # by converting the list of edge verticies v1s & v2s to indicies into verts
-        v1ii = np.argwhere(np.all((verts == np.tile(v1s, verts.shape[0]).reshape((-1, verts.shape[0], 3))), axis=2))[:, 1]
-        v2ii = np.argwhere(np.all((verts == np.tile(v2s, verts.shape[0]).reshape((-1, verts.shape[0], 3))), axis=2))[:, 1]
-        for ii, jj in zip(v1ii, v2ii):
-            G.add_edge(ii, jj)
+        G.add_edges(edges)
 
         # 5: Find the paths for each component
         components = []
