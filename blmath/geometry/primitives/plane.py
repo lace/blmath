@@ -16,8 +16,8 @@ class Plane(object):
 
         unit_normal = vx.normalize(unit_normal)
 
-        self._r0 = point_on_plane
-        self._n = unit_normal
+        self._r0 = np.asarray(point_on_plane)
+        self._n = np.asarray(unit_normal)
 
     def __repr__(self):
         return "<Plane of {} through {}>".format(self.normal, self.reference_point)
@@ -127,7 +127,7 @@ class Plane(object):
         Return the plane's normal vector.
 
         '''
-        return np.array(self._n)
+        return self._n
 
     def flipped(self):
         '''
@@ -210,10 +210,10 @@ class Plane(object):
         return intersection_points
 
     def line_xsection(self, pt, ray):
-        pt = np.asarray(pt).ravel()
-        ray = np.asarray(ray).ravel()
-        assert len(pt) == 3
-        assert len(ray) == 3
+        # pt = np.asarray(pt).ravel()
+        # ray = np.asarray(ray).ravel()
+        # assert len(pt) == 3
+        # assert len(ray) == 3
 
         denom = np.dot(ray, self.normal)
         if denom == 0:
@@ -222,10 +222,10 @@ class Plane(object):
         return p * ray + pt
 
     def line_segment_xsection(self, a, b):
-        a = np.asarray(a).ravel()
-        b = np.asarray(b).ravel()
-        assert len(a) == 3
-        assert len(b) == 3
+        # a = np.asarray(a).ravel()
+        # b = np.asarray(b).ravel()
+        # assert len(a) == 3
+        # assert len(b) == 3
 
         pt = self.line_xsection(a, b-a)
         if pt is not None:
