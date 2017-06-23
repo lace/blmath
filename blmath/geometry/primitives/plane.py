@@ -300,65 +300,64 @@ class Plane(object):
                 self.d = {}
             def __len__(self):
                 return len(self.d)
-            def add_edge(self, ii, jj):
-                assert ii >= 0 and ii < self.size
-                assert jj >= 0 and jj < self.size
-                if ii not in self.d:
-                    self.d[ii] = set()
-                if jj not in self.d:
-                    self.d[jj] = set()
-                self.d[ii].add(jj)
-                self.d[jj].add(ii)
+            def add_edge(self, u, v):
+                assert u >= 0 and u < self.size
+                assert v >= 0 and v < self.size
+                if u not in self.d:
+                    self.d[u] = set()
+                if v not in self.d:
+                    self.d[v] = set()
+                self.d[u].add(v)
+                self.d[v].add(u)
+            def remove_edge(self, u, v):
+                    if u in self.d and v in self.d[u]:
+                        self.d[u].remove(v)
+                    if v in self.d and u in self.d[v]:
+                        self.d[v].remove(u)
+                    if v in self.d and len(self.d[v]) == 0:
+                        del self.d[v]
+                    if u in self.d and len(self.d[u]) == 0:
+                        del self.d[u]
+            def euler_path(self, allow_multiple_connected_components=True):
+                # Based on code from Przemek Drochomirecki, Krakow, 5 Nov 2006
+                # http://code.activestate.com/recipes/498243-finding-eulerian-path-in-undirected-graph/
+                # Under PSF License
+                # NB: MUTATES graph
+
+                graph = self.d
+                # counting the number of vertices with odd degree
+                odd = [x for x in graph.keys() if len(graph[x])&1]
+                odd.append(graph.keys()[0])
+                if not allow_multiple_connected_components and len(odd)>3:
+                    return None
+                stack = [odd[0]]
+                path = []
+                # main algorithm
+                while stack:
+                    v = stack[-1]
+                    if v in graph:
+                        u = graph[v].pop()
+                        stack.append(u)
+                        self.remove_edge(u, v)
+                    else:
+                        path.append(stack.pop())
+                return path
+
 
         # 4: Build the edge adjacency graph
         G = Graph(verts.shape[0])
-        def indexof(v, in_this):
-            return np.nonzero(np.all(np.abs(in_this - v) < eps, axis=1))[0]
-        for ii, v in enumerate(verts):
-            for other_v in list(v2s[indexof(v, v1s)]) + list(v1s[indexof(v, v2s)]):
-                neighbors = indexof(other_v, verts)
-                for jj in neighbors:
-                    G.add_edge(ii, jj)
-
-        def euler_path(graph):
-            # Based on code from Przemek Drochomirecki, Krakow, 5 Nov 2006
-            # http://code.activestate.com/recipes/498243-finding-eulerian-path-in-undirected-graph/
-            # Under PSF License
-            # NB: MUTATES graph
-
-            # counting the number of vertices with odd degree
-            odd = [x for x in graph.keys() if len(graph[x])&1]
-            odd.append(graph.keys()[0])
-            # This check is appropriate if there is a single connected component.
-            # Since we're willing to take away one connected component per call,
-            # we skip this check.
-            # if len(odd)>3:
-            #     return None
-            stack = [odd[0]]
-            path = []
-            # main algorithm
-            while stack:
-                v = stack[-1]
-                if v in graph:
-                    u = graph[v].pop()
-                    stack.append(u)
-                    # deleting edge u-v (v-u already removed by pop)
-                    graph[u].remove(v)
-                    # graph[v].remove(u)
-                    if len(graph[v]) == 0:
-                        del graph[v]
-                    if len(graph[u]) == 0:
-                        del graph[u]
-                else:
-                    path.append(stack.pop())
-            return path
+        # by converting the list of edge verticies v1s & v2s to indicies into verts
+        v1ii = np.argwhere(np.all((verts == np.tile(v1s, verts.shape[0]).reshape((-1, verts.shape[0], 3))), axis=2))[:, 1]
+        v2ii = np.argwhere(np.all((verts == np.tile(v2s, verts.shape[0]).reshape((-1, verts.shape[0], 3))), axis=2))[:, 1]
+        for ii, jj in zip(v1ii, v2ii):
+            G.add_edge(ii, jj)
 
         # 5: Find the paths for each component
         components = []
         components_closed = []
         while len(G) > 0:
             # This works because euler_path mutates the graph as it goes
-            path = euler_path(G.d)
+            path = G.euler_path()
             if path is None:
                 raise ValueError("mesh slice has too many odd degree edges; can't find a path along the edge")
             component_verts = verts[path]
