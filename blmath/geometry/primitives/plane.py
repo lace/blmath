@@ -210,11 +210,9 @@ class Plane(object):
         return intersection_points
 
     def line_xsection(self, pt, ray):
-        # pt = np.asarray(pt).ravel()
-        # ray = np.asarray(ray).ravel()
-        # assert len(pt) == 3
-        # assert len(ray) == 3
+        return self._line_xsection(np.asarray(pt).ravel(), np.asarray(ray).ravel())
 
+    def _line_xsection(self, pt, ray):
         denom = np.dot(ray, self.normal)
         if denom == 0:
             return None # parallel, either coplanar or non-intersecting
@@ -222,12 +220,10 @@ class Plane(object):
         return p * ray + pt
 
     def line_segment_xsection(self, a, b):
-        # a = np.asarray(a).ravel()
-        # b = np.asarray(b).ravel()
-        # assert len(a) == 3
-        # assert len(b) == 3
+        return self._line_segment_xsection(np.asarray(a).ravel(), np.asarray(b).ravel())
 
-        pt = self.line_xsection(a, b-a)
+    def _line_segment_xsection(self, a, b):
+        pt = self._line_xsection(a, b-a)
         if pt is not None:
             if any(np.logical_and(pt > a, pt > b)) or any(np.logical_and(pt < a, pt < b)):
                 return None
@@ -245,6 +241,11 @@ class Plane(object):
         if len(components) == 0:
             return Polyline(None)
         return Polyline(np.vstack([x.v for x in components]), closed=True)
+
+    def mesh_intersecting_faces(self, m):
+        sgn_dists = self.signed_distance(m.v)
+        which_fs = np.abs(np.sign(sgn_dists)[m.f].sum(axis=1)) != 3
+        return m.f[which_fs]
 
     def mesh_xsections(self, m, neighborhood=None):
         '''
@@ -267,26 +268,67 @@ class Plane(object):
         from blmath.geometry import Polyline
 
         # 1: Select those faces that intersect the plane, fs
-        sgn_dists = self.signed_distance(m.v)
-        which_fs = np.abs(np.sign(sgn_dists)[m.f].sum(axis=1)) != 3
-        fs = m.f[which_fs]
+        fs = self.mesh_intersecting_faces(m)
         if len(fs) == 0:
             return [] # Nothing intersects
         # and edges of those faces
         es = np.vstack((fs[:,(0,1)], fs[:,(1,2)], fs[:,(2,0)]))
 
         # 2: Find the edges where each of those faces actually cross the plane
-        unique_edges = {tuple(x) for x in np.sort(es, axis=1)}
-        intersections = [self.line_segment_xsection(m.v[u], m.v[v]) for u, v in unique_edges]
-        valid = [x is not None for x in intersections]
-        unique_edges = [x for x, ok in zip(unique_edges, valid) if ok]
-        verts = np.array([x for x in intersections if x is not None])
-        intersection_map = dict(zip(unique_edges, range(len(verts))))
+        class EdgeMap(object):
+            # A quick two level dictionary
+            def __init__(self):
+                self.d = {} # store indicies into self.values here, to make it easier to get inds or values
+                self.values = []
+            def _order(self, u, v):
+                if u < v:
+                    return u, v
+                else:
+                    return v, u
+            def add(self, u, v, val):
+                low, high = self._order(u, v)
+                if low not in self.d:
+                    self.d[low] = {}
+                self.values.append(val)
+                self.d[low][high] = len(self.values) - 1
+            def contains(self, u, v):
+                low, high = self._order(u, v)
+                if low in self.d and high in self.d[low]:
+                    return True
+                return False
+            def index(self, u, v):
+                low, high = self._order(u, v)
+                try:
+                    return self.d[low][high]
+                except KeyError:
+                    return None
+            def get(self, u, v):
+                ii = self.index(u, v)
+                if ii is not None:
+                    return self.values[ii]
+                else:
+                    return None
+        class IntersectionMap(EdgeMap):
+            def fill(self, edge_list, intersection_fn):
+                for e in edge_list:
+                    if not self.contains(e[0], e[1]):
+                        val = intersection_fn(e[0], e[1])
+                        if val is not None:
+                            self.add(e[0], e[1], val)
+            @property
+            def verts(self):
+                return np.array(self.values)
+            @property
+            def edges(self):
+                def edge_from_face(f):
+                    e = [self.index(f[0], f[1]), self.index(f[0], f[2]), self.index(f[1], f[2])]
+                    return [x for x in e if x is not None]
+                return [edge_from_face(f) for f in fs]
 
-        def edge_from_face(f):
-            e = [tuple(sorted((f[0], f[1]))), tuple(sorted((f[0], f[2]))), tuple(sorted((f[1], f[2])))]
-            return [intersection_map[ii] for ii in e if ii in intersection_map]
-        edges = [edge_from_face(f) for f in fs]
+        intersection_map = IntersectionMap()
+        intersection_map.fill(es, lambda u, v: self._line_segment_xsection(m.v[u], m.v[v]))
+        verts = intersection_map.verts
+        edges = intersection_map.edges
 
         class Graph(object):
             # A little utility class to build a symmetric graph and calcualate Euler Paths
