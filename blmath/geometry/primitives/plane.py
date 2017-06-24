@@ -361,7 +361,7 @@ class Plane(object):
                 # main algorithm
                 while stack:
                     v = stack[-1]
-                    if v in self.d and self.d[v]:
+                    if v in self.d:
                         u = self.d[v].pop()
                         stack.append(u)
                         self.remove_edge(u, v)
