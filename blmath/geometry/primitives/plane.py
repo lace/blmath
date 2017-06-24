@@ -308,27 +308,14 @@ class Plane(object):
                     return self.values[ii]
                 else:
                     return None
-        class IntersectionMap(EdgeMap):
-            def fill(self, edge_list, intersection_fn):
-                for e in edge_list:
-                    if not self.contains(e[0], e[1]):
-                        val = intersection_fn(e[0], e[1])
-                        if val is not None:
-                            self.add(e[0], e[1], val)
-            @property
-            def verts(self):
-                return np.array(self.values)
-            @property
-            def edges(self):
-                def edge_from_face(f):
-                    e = [self.index(f[0], f[1]), self.index(f[0], f[2]), self.index(f[1], f[2])]
-                    return [x for x in e if x is not None]
-                return [edge_from_face(f) for f in fs]
 
-        intersection_map = IntersectionMap()
-        intersection_map.fill(es, lambda u, v: self._line_segment_xsection(m.v[u], m.v[v]))
-        verts = intersection_map.verts
-        edges = intersection_map.edges
+        intersection_map = EdgeMap()
+        for e in es:
+            if not intersection_map.contains(e[0], e[1]):
+                val = self._line_segment_xsection(m.v[e[0]], m.v[e[1]])
+                if val is not None:
+                    intersection_map.add(e[0], e[1], val)
+        verts = np.array(intersection_map.values)
 
         class Graph(object):
             # A little utility class to build a symmetric graph and calcualate Euler Paths
@@ -358,7 +345,7 @@ class Plane(object):
                         del self.d[v]
                     if u in self.d and len(self.d[u]) == 0:
                         del self.d[u]
-            def euler_path(self, allow_multiple_connected_components=True):
+            def pop_euler_path(self, allow_multiple_connected_components=True):
                 # Based on code from Przemek Drochomirecki, Krakow, 5 Nov 2006
                 # http://code.activestate.com/recipes/498243-finding-eulerian-path-in-undirected-graph/
                 # Under PSF License
@@ -385,14 +372,23 @@ class Plane(object):
 
         # 4: Build the edge adjacency graph
         G = Graph(verts.shape[0])
-        G.add_edges(edges)
+        for f in fs:
+            e0 = intersection_map.index(f[0], f[1])
+            e1 = intersection_map.index(f[0], f[2])
+            e2 = intersection_map.index(f[1], f[2])
+            if e0 is None:
+                G.add_edge(e1, e2)
+            elif e1 is None:
+                G.add_edge(e0, e2)
+            else:
+                G.add_edge(e0, e1)
 
         # 5: Find the paths for each component
         components = []
         components_closed = []
         while len(G) > 0:
-            # This works because euler_path mutates the graph as it goes
-            path = G.euler_path()
+            # This works because pop_euler_path mutates the graph as it goes
+            path = G.pop_euler_path()
             if path is None:
                 raise ValueError("mesh slice has too many odd degree edges; can't find a path along the edge")
             component_verts = verts[path]
