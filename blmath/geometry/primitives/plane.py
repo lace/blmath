@@ -317,7 +317,7 @@ class Plane(object):
         verts = np.array(intersection_map.values)
 
         class Graph(object):
-            # A little utility class to build a symmetric graph and calcualate Euler Paths
+            # A little utility class to build a symmetric graph and calculate Euler Paths
             def __init__(self, size):
                 self.size = size
                 self.d = {}
