@@ -264,6 +264,9 @@ class PlaneXSectionTests(unittest.TestCase):
 
         plane = Plane(sample, normal)
 
+        # Verify that we're finding the correct number of faces to start with
+        self.assertEqual(len(plane.mesh_intersecting_faces(self.box_mesh)), 8)
+
         xsections = plane.mesh_xsections(self.box_mesh)
         self.assertIsInstance(xsections, list)
         self.assertEqual(len(xsections), 1)
@@ -287,6 +290,9 @@ class PlaneXSectionTests(unittest.TestCase):
         sample = np.array([0., 5., 0.])
 
         plane = Plane(sample, normal)
+
+        # Verify that we're detecting faces that lay entirely in the plane as potential intersections
+        self.assertEqual(len(plane.mesh_intersecting_faces(self.box_mesh)), 0)
 
         xsections = plane.mesh_xsections(self.box_mesh)
         self.assertIsInstance(xsections, list)

@@ -16,8 +16,8 @@ class Plane(object):
 
         unit_normal = vx.normalize(unit_normal)
 
-        self._r0 = point_on_plane
-        self._n = unit_normal
+        self._r0 = np.asarray(point_on_plane)
+        self._n = np.asarray(unit_normal)
 
     def __repr__(self):
         return "<Plane of {} through {}>".format(self.normal, self.reference_point)
@@ -127,7 +127,7 @@ class Plane(object):
         Return the plane's normal vector.
 
         '''
-        return np.array(self._n)
+        return self._n
 
     def flipped(self):
         '''
@@ -210,10 +210,9 @@ class Plane(object):
         return intersection_points
 
     def line_xsection(self, pt, ray):
-        pt = np.asarray(pt).ravel()
-        ray = np.asarray(ray).ravel()
-        assert len(pt) == 3
-        assert len(ray) == 3
+        return self._line_xsection(np.asarray(pt).ravel(), np.asarray(ray).ravel())
+
+    def _line_xsection(self, pt, ray):
         denom = np.dot(ray, self.normal)
         if denom == 0:
             return None # parallel, either coplanar or non-intersecting
@@ -221,14 +220,12 @@ class Plane(object):
         return p * ray + pt
 
     def line_segment_xsection(self, a, b):
-        a = np.asarray(a).ravel()
-        b = np.asarray(b).ravel()
-        assert len(a) == 3
-        assert len(b) == 3
+        return self._line_segment_xsection(np.asarray(a).ravel(), np.asarray(b).ravel())
 
-        pt = self.line_xsection(a, b-a)
+    def _line_segment_xsection(self, a, b):
+        pt = self._line_xsection(a, b-a)
         if pt is not None:
-            if np.any(pt < np.min((a, b), axis=0)) or np.any(pt > np.max((a, b), axis=0)):
+            if any(np.logical_and(pt > a, pt > b)) or any(np.logical_and(pt < a, pt < b)):
                 return None
         return pt
 
@@ -244,6 +241,11 @@ class Plane(object):
         if len(components) == 0:
             return Polyline(None)
         return Polyline(np.vstack([x.v for x in components]), closed=True)
+
+    def mesh_intersecting_faces(self, m):
+        sgn_dists = self.signed_distance(m.v)
+        which_fs = np.abs(np.sign(sgn_dists)[m.f].sum(axis=1)) != 3
+        return m.f[which_fs]
 
     def mesh_xsections(self, m, neighborhood=None):
         '''
@@ -262,103 +264,131 @@ class Plane(object):
 
         Returns a list of Polylines.
         '''
-        import operator
         from blmath.geometry import Polyline
 
         # 1: Select those faces that intersect the plane, fs
-        sgn_dists = self.signed_distance(m.v)
-        which_fs = np.abs(np.sign(sgn_dists)[m.f].sum(axis=1)) != 3
-        fs = m.f[which_fs]
-
+        fs = self.mesh_intersecting_faces(m)
         if len(fs) == 0:
             return [] # Nothing intersects
+        # and edges of those faces
+        es = np.vstack((fs[:, (0, 1)], fs[:, (1, 2)], fs[:, (2, 0)]))
 
         # 2: Find the edges where each of those faces actually cross the plane
-        def edge_from_face(f):
-            face_verts = [
-                [m.v[f[0]], m.v[f[1]]],
-                [m.v[f[1]], m.v[f[2]]],
-                [m.v[f[2]], m.v[f[0]]],
-            ]
-            e = [self.line_segment_xsection(a, b) for a, b in face_verts]
-            e = [x for x in e if x is not None]
-            return e
-        edges = np.vstack([np.hstack(edge_from_face(f)) for f in fs])
+        class EdgeMap(object):
+            # A quick two level dictionary where the two keys are interchangeable (i.e. a symmetric graph)
+            def __init__(self):
+                self.d = {} # store indicies into self.values here, to make it easier to get inds or values
+                self.values = []
+            def _order(self, u, v):
+                if u < v:
+                    return u, v
+                else:
+                    return v, u
+            def add(self, u, v, val):
+                low, high = self._order(u, v)
+                if low not in self.d:
+                    self.d[low] = {}
+                self.values.append(val)
+                self.d[low][high] = len(self.values) - 1
+            def contains(self, u, v):
+                low, high = self._order(u, v)
+                if low in self.d and high in self.d[low]:
+                    return True
+                return False
+            def index(self, u, v):
+                low, high = self._order(u, v)
+                try:
+                    return self.d[low][high]
+                except KeyError:
+                    return None
+            def get(self, u, v):
+                ii = self.index(u, v)
+                if ii is not None:
+                    return self.values[ii]
+                else:
+                    return None
 
-        # 3: Find the set of unique vertices in `edges`
-        v1s, v2s = np.hsplit(edges, 2)
-        verts = edges.reshape((-1, 3))
-        verts = np.vstack(sorted(verts, key=operator.itemgetter(0, 1, 2)))
-        eps = 1e-15 # the floating point calculation of the intersection locations is not _quite_ exact
-        verts = verts[list(np.sqrt(np.sum(np.diff(verts, axis=0) ** 2, axis=1)) > eps) + [True]]
-        # the True at the end there is because np.diff returns pairwise differences; one less element than the original array
+        intersection_map = EdgeMap()
+        for e in es:
+            if not intersection_map.contains(e[0], e[1]):
+                val = self._line_segment_xsection(m.v[e[0]], m.v[e[1]])
+                if val is not None:
+                    intersection_map.add(e[0], e[1], val)
+        verts = np.array(intersection_map.values)
 
         class Graph(object):
-            # A little utility class to build a symmetric graph
+            # A little utility class to build a symmetric graph and calculate Euler Paths
             def __init__(self, size):
                 self.size = size
                 self.d = {}
             def __len__(self):
                 return len(self.d)
-            def add_edge(self, ii, jj):
-                assert ii >= 0 and ii < self.size
-                assert jj >= 0 and jj < self.size
-                if ii not in self.d:
-                    self.d[ii] = set()
-                if jj not in self.d:
-                    self.d[jj] = set()
-                self.d[ii].add(jj)
-                self.d[jj].add(ii)
+            def add_edges(self, edges):
+                for u, v in edges:
+                    self.add_edge(u, v)
+            def add_edge(self, u, v):
+                assert u >= 0 and u < self.size
+                assert v >= 0 and v < self.size
+                if u not in self.d:
+                    self.d[u] = set()
+                if v not in self.d:
+                    self.d[v] = set()
+                self.d[u].add(v)
+                self.d[v].add(u)
+            def remove_edge(self, u, v):
+                if u in self.d and v in self.d[u]:
+                    self.d[u].remove(v)
+                if v in self.d and u in self.d[v]:
+                    self.d[v].remove(u)
+                if v in self.d and len(self.d[v]) == 0:
+                    del self.d[v]
+                if u in self.d and len(self.d[u]) == 0:
+                    del self.d[u]
+            def pop_euler_path(self, allow_multiple_connected_components=True):
+                # Based on code from Przemek Drochomirecki, Krakow, 5 Nov 2006
+                # http://code.activestate.com/recipes/498243-finding-eulerian-path-in-undirected-graph/
+                # Under PSF License
+                # NB: MUTATES d
+
+                # counting the number of vertices with odd degree
+                odd = [x for x in self.d if len(self.d[x])&1]
+                odd.append(self.d.keys()[0])
+                if not allow_multiple_connected_components and len(odd) > 3:
+                    return None
+                stack = [odd[0]]
+                path = []
+                # main algorithm
+                while stack:
+                    v = stack[-1]
+                    if v in self.d:
+                        u = self.d[v].pop()
+                        stack.append(u)
+                        self.remove_edge(u, v)
+                    else:
+                        path.append(stack.pop())
+                return path
 
         # 4: Build the edge adjacency graph
         G = Graph(verts.shape[0])
-        def indexof(v, in_this):
-            return np.nonzero(np.all(np.abs(in_this - v) < eps, axis=1))[0]
-        for ii, v in enumerate(verts):
-            for other_v in list(v2s[indexof(v, v1s)]) + list(v1s[indexof(v, v2s)]):
-                neighbors = indexof(other_v, verts)
-                for jj in neighbors:
-                    G.add_edge(ii, jj)
-
-        def euler_path(graph):
-            # Based on code from Przemek Drochomirecki, Krakow, 5 Nov 2006
-            # http://code.activestate.com/recipes/498243-finding-eulerian-path-in-undirected-graph/
-            # Under PSF License
-            # NB: MUTATES graph
-
-            # counting the number of vertices with odd degree
-            odd = [x for x in graph.keys() if len(graph[x])&1]
-            odd.append(graph.keys()[0])
-            # This check is appropriate if there is a single connected component.
-            # Since we're willing to take away one connected component per call,
-            # we skip this check.
-            # if len(odd)>3:
-            #     return None
-            stack = [odd[0]]
-            path = []
-            # main algorithm
-            while stack:
-                v = stack[-1]
-                if v in graph:
-                    u = graph[v].pop()
-                    stack.append(u)
-                    # deleting edge u-v (v-u already removed by pop)
-                    graph[u].remove(v)
-                    # graph[v].remove(u)
-                    if len(graph[v]) == 0:
-                        del graph[v]
-                    if len(graph[u]) == 0:
-                        del graph[u]
-                else:
-                    path.append(stack.pop())
-            return path
+        for f in fs:
+            # Since we're dealing with a triangle that intersects the plane, exactly two of the edges
+            # will intersect (note that the only other sorts of "intersections" are one edge in
+            # plane or all three edges in plane, which won't be picked up by mesh_intersecting_faces).
+            e0 = intersection_map.index(f[0], f[1])
+            e1 = intersection_map.index(f[0], f[2])
+            e2 = intersection_map.index(f[1], f[2])
+            if e0 is None:
+                G.add_edge(e1, e2)
+            elif e1 is None:
+                G.add_edge(e0, e2)
+            else:
+                G.add_edge(e0, e1)
 
         # 5: Find the paths for each component
         components = []
         components_closed = []
         while len(G) > 0:
-            # This works because euler_path mutates the graph as it goes
-            path = euler_path(G.d)
+            path = G.pop_euler_path()
             if path is None:
                 raise ValueError("mesh slice has too many odd degree edges; can't find a path along the edge")
             component_verts = verts[path]
