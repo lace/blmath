@@ -264,7 +264,6 @@ class Plane(object):
 
         Returns a list of Polylines.
         '''
-        import operator
         from blmath.geometry import Polyline
 
         # 1: Select those faces that intersect the plane, fs
@@ -272,11 +271,11 @@ class Plane(object):
         if len(fs) == 0:
             return [] # Nothing intersects
         # and edges of those faces
-        es = np.vstack((fs[:,(0,1)], fs[:,(1,2)], fs[:,(2,0)]))
+        es = np.vstack((fs[:, (0, 1)], fs[:, (1, 2)], fs[:, (2, 0)]))
 
         # 2: Find the edges where each of those faces actually cross the plane
         class EdgeMap(object):
-            # A quick two level dictionary
+            # A quick two level dictionary where the two keys are interchangeable (i.e. a symmetric graph)
             def __init__(self):
                 self.d = {} # store indicies into self.values here, to make it easier to get inds or values
                 self.values = []
@@ -337,14 +336,14 @@ class Plane(object):
                 self.d[u].add(v)
                 self.d[v].add(u)
             def remove_edge(self, u, v):
-                    if u in self.d and v in self.d[u]:
-                        self.d[u].remove(v)
-                    if v in self.d and u in self.d[v]:
-                        self.d[v].remove(u)
-                    if v in self.d and len(self.d[v]) == 0:
-                        del self.d[v]
-                    if u in self.d and len(self.d[u]) == 0:
-                        del self.d[u]
+                if u in self.d and v in self.d[u]:
+                    self.d[u].remove(v)
+                if v in self.d and u in self.d[v]:
+                    self.d[v].remove(u)
+                if v in self.d and len(self.d[v]) == 0:
+                    del self.d[v]
+                if u in self.d and len(self.d[u]) == 0:
+                    del self.d[u]
             def pop_euler_path(self, allow_multiple_connected_components=True):
                 # Based on code from Przemek Drochomirecki, Krakow, 5 Nov 2006
                 # http://code.activestate.com/recipes/498243-finding-eulerian-path-in-undirected-graph/
@@ -352,9 +351,9 @@ class Plane(object):
                 # NB: MUTATES d
 
                 # counting the number of vertices with odd degree
-                odd = [x for x in self.d.keys() if len(self.d[x])&1]
+                odd = [x for x in self.d if len(self.d[x])&1]
                 odd.append(self.d.keys()[0])
-                if not allow_multiple_connected_components and len(odd)>3:
+                if not allow_multiple_connected_components and len(odd) > 3:
                     return None
                 stack = [odd[0]]
                 path = []
@@ -368,7 +367,6 @@ class Plane(object):
                     else:
                         path.append(stack.pop())
                 return path
-
 
         # 4: Build the edge adjacency graph
         G = Graph(verts.shape[0])
