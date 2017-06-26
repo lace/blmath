@@ -371,7 +371,7 @@ class Plane(object):
         # 4: Build the edge adjacency graph
         G = Graph(verts.shape[0])
         for f in fs:
-            # Since we're dealing with a triangle that intersects the plane, exactly of the edges
+            # Since we're dealing with a triangle that intersects the plane, exactly two of the edges
             # will intersect (note that the only other sorts of "intersections" are one edge in
             # plane or all three edges in plane, which won't be picked up by mesh_intersecting_faces).
             e0 = intersection_map.index(f[0], f[1])
