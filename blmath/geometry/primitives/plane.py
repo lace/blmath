@@ -371,6 +371,9 @@ class Plane(object):
         # 4: Build the edge adjacency graph
         G = Graph(verts.shape[0])
         for f in fs:
+            # Since we're dealing with a triangle that intersects the plane, exactly of the edges
+            # will intersect (note that the only other sorts of "intersections" are one edge in
+            # plane or all three edges in plane, which won't be picked up by mesh_intersecting_faces).
             e0 = intersection_map.index(f[0], f[1])
             e1 = intersection_map.index(f[0], f[2])
             e2 = intersection_map.index(f[1], f[2])
@@ -385,7 +388,6 @@ class Plane(object):
         components = []
         components_closed = []
         while len(G) > 0:
-            # This works because pop_euler_path mutates the graph as it goes
             path = G.pop_euler_path()
             if path is None:
                 raise ValueError("mesh slice has too many odd degree edges; can't find a path along the edge")
