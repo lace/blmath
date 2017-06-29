@@ -245,6 +245,19 @@ class PlaneXSectionTests(unittest.TestCase):
         np.testing.assert_array_equal(plane.line_xsection(pt=[0., -1., 0.], ray=[0., 1., 0.]), [0., 0., 0.])
         np.testing.assert_array_equal(plane.line_xsection(pt=[0., -1., 0.], ray=[1., 1., 0.]), [1., 0., 0.])
 
+    def test_line_plane_intersections(self):
+        # x-z plane
+        normal = np.array([0., 1., 0.])
+        sample = np.array([0., 0., 0.])
+
+        plane = Plane(sample, normal)
+        pts = np.array([[0., -1., 0.], [0., 0., 0.], [0., -1., 0.], [0., -1., 0.]])
+        rays = np.array([[1., 0., 0.], [1., 0., 0.], [0., 1., 0.], [1., 1., 0.]])
+        expected = np.array([[np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan], [0., 0., 0.], [1., 0., 0.]])
+        intersections, is_intserseting = plane.line_xsections(pts, rays)
+        np.testing.assert_array_equal(intersections, expected)
+        np.testing.assert_array_equal(is_intserseting, [False, False, True, True])
+
     def test_line_segment_plane_intersection(self):
         # x-z plane
         normal = np.array([0., 1., 0.])
@@ -256,6 +269,19 @@ class PlaneXSectionTests(unittest.TestCase):
         np.testing.assert_array_equal(plane.line_segment_xsection([0., -1., 0.], [0., 1., 0.]), [0., 0., 0.])
         np.testing.assert_array_equal(plane.line_segment_xsection([0., -1., 0.], [2., 1., 0.]), [1., 0., 0.])
         self.assertIsNone(plane.line_segment_xsection([0., 1., 0.], [0., 2., 0.])) # line intersecting, but not in segment
+
+    def test_line_segment_plane_intersections(self):
+        # x-z plane
+        normal = np.array([0., 1., 0.])
+        sample = np.array([0., 0., 0.])
+
+        plane = Plane(sample, normal)
+        a = np.array([[0., -1., 0.], [0., 0., 0.], [0., -1., 0.], [0., -1., 0.], [0., 1., 0.]])
+        b = np.array([[1., -1., 0.], [1., 0., 0.], [0., 1., 0.], [2., 1., 0.], [0., 2., 0.]])
+        expected = np.array([[np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan], [0., 0., 0.], [1., 0., 0.], [np.nan, np.nan, np.nan]])
+        intersections, is_intserseting = plane.line_segment_xsections(a, b)
+        np.testing.assert_array_equal(intersections, expected)
+        np.testing.assert_array_equal(is_intserseting, [False, False, True, True, False])
 
     def test_mesh_plane_intersection(self):
         # x-z plane
