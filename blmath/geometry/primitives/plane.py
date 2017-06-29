@@ -238,7 +238,7 @@ class Plane(object):
 
     def line_segment_xsections(self, a, b):
         pts, pt_is_valid = self.line_xsections(a, b-a)
-        pt_is_out_of_bounds = np.logical_or(np.any(np.logical_and(pts[pt_is_valid] > a[pt_is_valid], pts[pt_is_valid] > b[pt_is_valid]), axis=1), 
+        pt_is_out_of_bounds = np.logical_or(np.any(np.logical_and(pts[pt_is_valid] > a[pt_is_valid], pts[pt_is_valid] > b[pt_is_valid]), axis=1),
                                             np.any(np.logical_and(pts[pt_is_valid] < a[pt_is_valid], pts[pt_is_valid] < b[pt_is_valid]), axis=1))
         pt_is_valid[pt_is_valid] = ~pt_is_out_of_bounds
         pts[~pt_is_valid] = np.nan
@@ -326,7 +326,7 @@ class Plane(object):
 
         intersection_map = EdgeMap()
 
-        pts, pt_is_valid = self.line_segment_xsections(m.v[es[:,0]], m.v[es[:,1]])
+        pts, pt_is_valid = self.line_segment_xsections(m.v[es[:, 0]], m.v[es[:, 1]])
         valid_pts = pts[pt_is_valid]
         valid_es = es[pt_is_valid]
         for val, e in zip(valid_pts, valid_es):
