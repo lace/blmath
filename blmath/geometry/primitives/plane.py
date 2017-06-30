@@ -229,6 +229,22 @@ class Plane(object):
                 return None
         return pt
 
+    def line_xsections(self, pts, rays):
+        denoms = np.dot(rays, self.normal)
+        denom_is_zero = denoms == 0
+        denoms[denom_is_zero] = np.nan
+        p = np.dot(self.reference_point - pts, self.normal) / denoms
+        return np.vstack([p, p, p]).T * rays + pts, ~denom_is_zero
+
+    def line_segment_xsections(self, a, b):
+        pts, pt_is_valid = self.line_xsections(a, b-a)
+        pt_is_out_of_bounds = np.logical_or(np.any(np.logical_and(pts[pt_is_valid] > a[pt_is_valid], pts[pt_is_valid] > b[pt_is_valid]), axis=1),
+                                            np.any(np.logical_and(pts[pt_is_valid] < a[pt_is_valid], pts[pt_is_valid] < b[pt_is_valid]), axis=1))
+        pt_is_valid[pt_is_valid] = ~pt_is_out_of_bounds
+        pts[~pt_is_valid] = np.nan
+        return pts, pt_is_valid
+
+
     def mesh_xsection(self, m, neighborhood=None):
         '''
         Backwards compatible.
@@ -309,11 +325,13 @@ class Plane(object):
                     return None
 
         intersection_map = EdgeMap()
-        for e in es:
+
+        pts, pt_is_valid = self.line_segment_xsections(m.v[es[:, 0]], m.v[es[:, 1]])
+        valid_pts = pts[pt_is_valid]
+        valid_es = es[pt_is_valid]
+        for val, e in zip(valid_pts, valid_es):
             if not intersection_map.contains(e[0], e[1]):
-                val = self._line_segment_xsection(m.v[e[0]], m.v[e[1]])
-                if val is not None:
-                    intersection_map.add(e[0], e[1], val)
+                intersection_map.add(e[0], e[1], val)
         verts = np.array(intersection_map.values)
 
         class Graph(object):
