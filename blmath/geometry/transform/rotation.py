@@ -1,9 +1,17 @@
 import numpy as np
-from sklearn.decomposition import PCA
-import cv2
-from blmath.geometry.transform.translation import translation
 
-def rotate_to_xz_plane(points):
+def estimate_normal(planar_points):
+    from sklearn.decomposition import PCA
+
+    pca = PCA(n_components=3)
+    normal = pca.fit(planar_points).components_[-1]
+    normal /= np.linalg.norm(normal)
+    return normal
+
+def rotate_to_xz_plane(points, normal=None):
+    import cv2
+    from blmath.geometry.transform.translation import translation
+
     '''
     Rotates points to the x-z plane. If the initial center
     of mass is not to within 1e-5 of the origin, we
@@ -26,9 +34,8 @@ def rotate_to_xz_plane(points):
     else:
         translated, p0 = points, None
 
-    pca = PCA(n_components=3)
-    normal = pca.fit(points).components_[-1]
-    normal /= np.linalg.norm(normal)
+    if not normal:
+        normal = estimate_normal(points)
 
     e_2 = np.array([0., 1., 0.])
     theta = np.arccos(np.dot(e_2, normal))
