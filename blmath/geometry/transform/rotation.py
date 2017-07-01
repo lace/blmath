@@ -9,9 +9,6 @@ def estimate_normal(planar_points):
     return normal
 
 def rotate_to_xz_plane(points, normal=None):
-    import cv2
-    from blmath.geometry.transform.translation import translation
-
     '''
     Rotates points to the x-z plane. If the initial center
     of mass is not to within 1e-5 of the origin, we
@@ -24,6 +21,9 @@ def rotate_to_xz_plane(points, normal=None):
         - p0 is the translation factor (can be None)
 
     '''
+    import cv2
+    from blmath.geometry.transform.translation import translation
+
     if points is None or not len(points): # pylint: disable=len-as-condition
         raise ValueError('Some points are required')
 
