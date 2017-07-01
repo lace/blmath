@@ -51,7 +51,7 @@ def convexify_and_flatten_planar_curve(polyline, want_vertices=False, normal=Non
         - polyline:
             An instance of Polyline.
         - flatten:
-            Boolean; if True, 
+            Boolean; if True,
         - want_vertices:
             Boolean; do you want the indices to the convex hull vertices?
     '''
