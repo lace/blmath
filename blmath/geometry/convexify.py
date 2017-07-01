@@ -6,7 +6,7 @@ from blmath.geometry.transform.translation import translation
 
 def convexify_planar_curve(polyline, flatten=False, want_vertices=False, normal=None):
     '''
-    Take the convex hull of an almost planar 2-D curve in three-space.
+    Take the convex hull of a planar or almost planar 2-D curve in three-space.
 
     Params:
         - polyline:
@@ -28,9 +28,8 @@ def convexify_planar_curve(polyline, flatten=False, want_vertices=False, normal=
     if normal is None:
         normal = estimate_normal(v)
 
-    # to call ConvexHull, the points must be projected to a plane.
-    # with an eye toward numerical stability, this can be done by dropping 
-    # whichever dimension is closest to the normal
+    # ConvexHull(v) requires that v be projected to a plane and made N x 2.
+    # This is done by simply dropping whichever dimension is closest to the normal.
     dim_to_drop = np.argmax(np.abs(normal))
     dims_to_keep = [i for i in range(3) if i != dim_to_drop]
     proj_v = v[:, dims_to_keep]
@@ -46,14 +45,13 @@ def convexify_planar_curve(polyline, flatten=False, want_vertices=False, normal=
 def convexify_and_flatten_planar_curve(polyline, want_vertices=False, normal=None):
     '''
     Take the convex hull of an almost planar 2-D curve in three-space.
+    The rotated curve will be flattened on the y-axis, thereby losing length.
 
     Params:
         - polyline:
             An instance of Polyline.
         - flatten:
-            Boolean; if True, rotated curve will be flattened
-            on the y-axis, thereby losing length. This loss
-            may not be offset by the convex hull.
+            Boolean; if True, 
         - want_vertices:
             Boolean; do you want the indices to the convex hull vertices?
     '''
@@ -62,8 +60,7 @@ def convexify_and_flatten_planar_curve(polyline, want_vertices=False, normal=Non
 
     rotated, R, p0 = rotate_to_xz_plane(polyline.v, normal=normal)
 
-    if flatten:
-        rotated[:, 1] = np.mean(rotated[:, 1])
+    rotated[:, 1] = np.mean(rotated[:, 1])
 
     projected = rotated[:, [0, 2]]
 
