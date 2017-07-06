@@ -177,7 +177,7 @@ class Plane(object):
             - points:
                 V x 3 np.array
         '''
-        return np.dot(vx.pad_with_ones(points), self.equation)
+        return np.dot(points, self.equation[:3]) + self.equation[3]
 
     def distance(self, points):
         return np.absolute(self.signed_distance(points))
