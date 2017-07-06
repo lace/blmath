@@ -30,6 +30,8 @@ def convexify_planar_curve(polyline, flatten=False, want_vertices=False, normal=
 
     # ConvexHull(v) requires that v be projected to a plane and made N x 2.
     # This is done by simply dropping whichever dimension is closest to the normal.
+    # Even though this may project the points onto a new plane, the projected points
+    # will maintain the same convexity/non-convexity relationships
     dim_to_drop = np.argmax(np.abs(normal))
     dims_to_keep = [i for i in range(3) if i != dim_to_drop]
     proj_v = v[:, dims_to_keep]
