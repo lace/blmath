@@ -102,8 +102,10 @@ class TestCoordinateManager(unittest.TestCase):
 
         cube_v = create_cube_verts([1., 0., 0.], 4.)
         cube_floor_point = np.array([3., 0., 2.]) # as lace.mesh.floor_point
-        # spec the mock for avaiable attributes since magic mock will "always"
-        # have an attribute
+
+        # By default a magic mock will always have any attribute it's asked for;
+        # here we set the spec property so that it will not respond to having a copy method
+        # when the CoodinateManager looks for it.
         cube = MagicMock(spec=['v', 'other_thing'], v=cube_v, other_thing=np.array([-9.]))
 
         coordinate_manager = CoordinateManager()
