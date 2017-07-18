@@ -102,7 +102,7 @@ class TestCoordinateManager(unittest.TestCase):
 
         cube_v = create_cube_verts([1., 0., 0.], 4.)
         cube_floor_point = np.array([3., 0., 2.]) # as lace.mesh.floor_point
-        cube = MagicMock(v=cube_v, other_thing=np.array([-9.]))
+        cube = MagicMock(spec=['v', 'other_thing'], v=cube_v, other_thing=np.array([-9.]))
 
         coordinate_manager = CoordinateManager()
         coordinate_manager.tag_as('source')
