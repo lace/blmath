@@ -62,6 +62,7 @@ class CoordinateManager(object):
 
     def do_transform(self, points_or_mesh, from_tag, to_tag):
         from copy import copy
+
         if hasattr(points_or_mesh, 'v'):
             points = points_or_mesh.v
             # Can't run the transform if there are no vertices.
@@ -86,8 +87,11 @@ class CoordinateManager(object):
             result_points = self._transform(points, from_range=from_range, reverse=True)
 
         if hasattr(points_or_mesh, 'v'):
-            result_mesh = copy(points_or_mesh)
+            # for lace or those object with copy method, invoke its own copy method
+            # otherwise just shallow copy
+            result_mesh = points_or_mesh.copy() if hasattr(points_or_mesh, 'copy') else copy(points_or_mesh)
             result_mesh.v = result_points
+
             return result_mesh
         else:
             return result_points
