@@ -97,34 +97,29 @@ class TestCoordinateManager(unittest.TestCase):
         np.testing.assert_array_almost_equal(source_v, cube_v)
 
     def test_coordinate_manager_forward_on_mesh(self):
-        from lace.mesh import Mesh
+        from mock import MagicMock
         from blmath.geometry.transform.coordinate_manager import CoordinateManager
 
         cube_v = create_cube_verts([1., 0., 0.], 4.)
         cube_floor_point = np.array([3., 0., 2.]) # as lace.mesh.floor_point
-        cube = Mesh(v=cube_v)
+        cube = MagicMock(v=cube_v, other_thing=np.array([-9.]))
 
         coordinate_manager = CoordinateManager()
         coordinate_manager.tag_as('source')
         coordinate_manager.translate(-cube_floor_point)
         coordinate_manager.scale(2)
         coordinate_manager.tag_as('floored_and_scaled')
-        # get some first
-        coordinate_manager.source = cube
-        _ = coordinate_manager.floored_and_scaled
-
         coordinate_manager.translate(np.array([0., -4., 0.]))
         coordinate_manager.tag_as('centered_at_origin')
 
         coordinate_manager.source = cube
 
-        floored_and_scaled = coordinate_manager.floored_and_scaled
-
         # Sanity check
         np.testing.assert_array_almost_equal(cube.v[0], [1., 0., 0.])
         np.testing.assert_array_almost_equal(cube.v[6], [5., 4., 4.])
+        np.testing.assert_array_equal(cube.other_thing, [-9.])
 
-
+        floored_and_scaled = coordinate_manager.floored_and_scaled
         np.testing.assert_array_almost_equal(floored_and_scaled.v[0], [-4., 0., -4.])
         np.testing.assert_array_almost_equal(floored_and_scaled.v[6], [4., 8., 4.])
-
+        np.testing.assert_array_equal(floored_and_scaled.other_thing, [-9.])
