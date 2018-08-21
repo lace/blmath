@@ -15,7 +15,7 @@ import platform
 from setuptools import setup, Extension
 import numpy as np
 
-with open(os.path.join(os.path.dirname(__file__)), 'requirements.txt') as f:
+with open(os.path.join(os.path.dirname(__file__), 'requirements.txt')) as f:
     install_requires = f.readlines()
 
 install_requires = [
