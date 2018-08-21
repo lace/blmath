@@ -1,5 +1,7 @@
 # Conversion from Markdown to pypi's restructured text: https://coderwall.com/p/qawuyq -- Thanks James.
 
+import os
+
 try:
     import pypandoc
     long_description = pypandoc.convert('README.md', 'rst')
