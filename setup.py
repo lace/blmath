@@ -1,5 +1,7 @@
 # Conversion from Markdown to pypi's restructured text: https://coderwall.com/p/qawuyq -- Thanks James.
 
+import os
+
 try:
     import pypandoc
     long_description = pypandoc.convert('README.md', 'rst')
@@ -9,13 +11,17 @@ except (IOError, ImportError):
 
 import importlib
 import platform
-from pip.req import parse_requirements
+
 from setuptools import setup, Extension
 import numpy as np
 
+with open(os.path.join(os.path.dirname(__file__), 'requirements.txt')) as f:
+    install_requires = f.readlines()
 
-install_requires = parse_requirements('requirements.txt', session=False)
-install_requires = [str(ir.req) for ir in install_requires]
+install_requires = [
+    x.strip() for x in install_requires
+    if x.strip() and not x.startswith('#')
+]
 
 if platform.system() == 'Windows':
     libs = ['suitesparseconfig', 'liblapack', 'libcolamd', 'libamd', 'libcholmod', 'libblas']
