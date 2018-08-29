@@ -7,7 +7,7 @@ try:
     long_description = pypandoc.convert('README.md', 'rst')
 except (IOError, ImportError):
     long_description = ''
-    print 'warning: pandoc or pypandoc does not seem to be installed; using empty long_description'
+    print('warning: pandoc or pypandoc does not seem to be installed; using empty long_description')
 
 import importlib
 import platform
