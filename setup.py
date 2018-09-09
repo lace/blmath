@@ -37,7 +37,7 @@ else:
     include_dirs = [np.get_include(), '/usr/include/suitesparse']
 
 setup(
-    name='blmath',
+    name='metablmath',
     version=importlib.import_module('blmath').__version__,
     author='Body Labs',
     author_email='alex@bodylabs.com',
