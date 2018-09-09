@@ -41,9 +41,9 @@ setup(
     version=importlib.import_module('blmath').__version__,
     author='Body Labs',
     author_email='alex@bodylabs.com',
-    description='A collection of math related utilities used by many bits of BodyLabs code',
+    description='Active fork of blmath, a collection math-related utilities developed at Body Labs',
     long_description=long_description,
-    url='https://github.com/bodylabs/blmath',
+    url='https://github.com/metabolize/blmath',
     license='MIT',
     packages=[
         'blmath',
