@@ -22,7 +22,7 @@ It's used by related forks such as [lace][].
 
 [upstream]: https://github.com/bodylabs/blmath
 [circle]: https://circleci.com/gh/metabolize/blmath
-[pypi]: https://pypi.org/project/blmath/
+[pypi]: https://pypi.org/project/metablmath/
 [pull requests]: https://github.com/metabolize/blmath/pulls
 [commits]: https://github.com/metabolize/blmath/commits/master
 [lace]: https://github.com/metabolize/lace
