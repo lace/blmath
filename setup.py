@@ -73,6 +73,7 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
+        # Requires baiji, which does not support python 3.
+        # 'Programming Language :: Python :: 3',
     ]
 )
