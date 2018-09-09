@@ -1,0 +1,70 @@
+version: 2
+jobs:
+  python2:
+    docker:
+      - image: circleci/python:2
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - run:
+          name: Install container dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -qq python-opencv libsuitesparse-dev
+
+      - run:
+          name: Install ruby dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -qq ruby
+            sudo gem install rake
+
+      - run:
+          name: Install python dependencies
+          command: |
+            mkdir -p venv
+            virtualenv venv
+            . venv/bin/activate
+            rake install_style_config
+            # Hack to disable the progress bar
+            set -o pipefail; pip install -U numpy scipy | cat
+            set -o pipefail; pip install -r requirements_dev.txt | cat
+            set -o pipefail; pip install -e . | cat
+
+      - run:
+          name: Show versions
+          command: |
+            . venv/bin/activate
+            pip freeze
+
+      - run:
+          name: Run tests
+          command: |
+            . venv/bin/activate
+            rake unittest
+
+      - run:
+          name: Check lint
+          command: |
+            . venv/bin/activate
+            rake lint
+
+workflows:
+  version: 2
+
+  on-commit:
+    jobs:
+      - python2
+
+  daily:
+    triggers:
+      - schedule:
+          cron: "0 17 * * *"
+          filters:
+            branches:
+              only: master
+    jobs:
+      - python2
