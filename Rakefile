@@ -66,5 +66,7 @@ task :upload do
     puts
     raise
   end
-  raise unless system "python setup.py sdist upload"
+  raise unless system "rm -rf dist"
+  raise unless system "python setup.py sdist"
+  raise unless system "twine upload dist/*"
 end
