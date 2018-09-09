@@ -37,7 +37,7 @@ def command_is_in_path?(command)
 end
 
 task :unittest do
-  raise unless system "nose2"
+  raise unless system "nose2 --attribute '!missing_assets'"
 end
 
 task :lint => :require_style_config do

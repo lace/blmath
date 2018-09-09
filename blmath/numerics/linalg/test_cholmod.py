@@ -2,6 +2,7 @@ import unittest
 from baiji.serialization import pickle
 import numpy as np
 import scipy.sparse as sp
+from bltest import attr
 from blmath.cache import vc
 from blmath.numerics.linalg import lchol
 
@@ -30,6 +31,7 @@ class TestCholmod(unittest.TestCase):
     #     #print(mem1 - mem0)
     #     self.assertTrue(True)
 
+    @attr('missing_assets')
     def test_cholmod(self):
         A, chol_L, _, cv = pickle.load(vc('/unittest/linalg/cholmod.pkl'))
 
