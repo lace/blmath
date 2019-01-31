@@ -214,3 +214,26 @@ class TestPolyline(unittest.TestCase):
             np.testing.assert_array_almost_equal(result.v, expected.v)
             np.testing.assert_array_equal(result.e, expected.e)
             np.testing.assert_array_equal(indices, expected_indices)
+
+    def test_flip(self):
+        original = Polyline(np.array([
+            [0., 0., 0.],
+            [1., 0., 0.],
+            [1., 1., 0.],
+            [1., 7., 0.],
+            [1., 8., 0.],
+            [0., 8., 0.],
+        ]), closed=True)
+
+        expected = Polyline(np.array([
+            [0., 8., 0.],
+            [1., 8., 0.],
+            [1., 7., 0.],
+            [1., 1., 0.],
+            [1., 0., 0.],
+            [0., 0., 0.],
+        ]), closed=True)
+
+        original.flip()
+
+        np.testing.assert_array_almost_equal(original.v, expected.v)

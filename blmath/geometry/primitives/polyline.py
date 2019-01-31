@@ -129,6 +129,12 @@ class Polyline(object):
         '''
         return np.sum(self.segment_lengths)
 
+    def flip(self):
+        '''
+        Flip the polyline from end to end.
+        '''
+        self.v = np.flipud(self.v)
+
     def partition_by_length(self, max_length, ret_indices=False):
         '''
         Subdivide each line segment longer than max_length with
