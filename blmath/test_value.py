@@ -155,28 +155,28 @@ class TestValueSerialization(unittest.TestCase):
         x = Value(25, 'cm')
         x_json = json.dumps(x)
 
-        self.assertEquals(x_json, '{"__value__": {"units": "cm", "value": 25.0}}')
+        self.assertEqual(x_json, '{"__value__": {"units": "cm", "value": 25.0}}')
         x_obj = json.loads(x_json)
-        self.assertEquals(x, x_obj)
+        self.assertEqual(x, x_obj)
 
     def test_complex_serialization(self):
         x = {str(i): Value(i, 'cm') for i in range(10)}
         x_json = json.dumps(x)
         x_obj = json.loads(x_json)
-        self.assertEquals(x, x_obj)
+        self.assertEqual(x, x_obj)
 
 class TestValueDeserialization(unittest.TestCase):
 
     def test_loads(self):
         x_str = json.dumps({'__value__': {'value': 25.0, 'units': 'cm'}})
         x = json.loads(x_str)
-        self.assertEquals(x.value, 25.0)
-        self.assertEquals(x.units, 'cm')
+        self.assertEqual(x.value, 25.0)
+        self.assertEqual(x.units, 'cm')
 
     def test_from_json(self):
         x = Value.from_json({'__value__': {'value': 25.0, 'units': 'cm'}})
-        self.assertEquals(x.value, 25.0)
-        self.assertEquals(x.units, 'cm')
+        self.assertEqual(x.value, 25.0)
+        self.assertEqual(x.units, 'cm')
 
 if __name__ == '__main__':
     unittest.main()
