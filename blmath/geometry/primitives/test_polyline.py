@@ -32,6 +32,40 @@ class TestPolyline(unittest.TestCase):
 
         np.testing.assert_array_equal(Polyline(v, closed=True).e, expected_closed)
 
+    def test_segments(self):
+        polyline = Polyline(np.array([
+            [0., 0., 0.],
+            [1., 0., 0.],
+            [1., 1., 0.],
+            [1., 2., 0.],
+        ]), closed=True)
+
+        expected = np.array([
+            [[0., 0., 0.], [1., 0., 0.]],
+            [[1., 0., 0.], [1., 1., 0.]],
+            [[1., 1., 0.], [1., 2., 0.]],
+            [[1., 2., 0.], [0., 0., 0.]],
+        ])
+
+        np.testing.assert_array_equal(polyline.segments, expected)
+
+    def test_segment_vectors(self):
+        polyline = Polyline(np.array([
+            [0., 0., 0.],
+            [1., 0., 0.],
+            [1., 1., 0.],
+            [1., 2., 0.],
+        ]), closed=True)
+
+        expected = np.array([
+            [1., 0., 0.],
+            [0., 1., 0.],
+            [0., 1., 0.],
+            [-1., -2., 0.],
+        ])
+
+        np.testing.assert_array_equal(polyline.segment_vectors, expected)
+
     def test_length_of_empty_polyline(self):
         polyline = Polyline(None)
         self.assertEqual(polyline.total_length, 0)

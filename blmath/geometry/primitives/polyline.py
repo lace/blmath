@@ -111,6 +111,13 @@ class Polyline(object):
         return self.__dict__['e']
 
     @property
+    def segments(self):
+        '''
+        Coordinate pairs for each segment.
+        '''
+        return self.v[self.e]
+
+    @property
     def segment_lengths(self):
         '''
         The length of each of the segments.
@@ -128,6 +135,14 @@ class Polyline(object):
 
         '''
         return np.sum(self.segment_lengths)
+
+    @property
+    def segment_vectors(self):
+        '''
+        Vectors spanning each segment.
+        '''
+        segments = self.segments
+        return segments[:, 1] - segments[:, 0]
 
     def flip(self):
         '''
