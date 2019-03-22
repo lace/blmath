@@ -271,3 +271,27 @@ class TestPolyline(unittest.TestCase):
         original.flip()
 
         np.testing.assert_array_almost_equal(original.v, expected.v)
+
+    def test_reindexed(self):
+        original = Polyline(np.array([
+            [0., 0., 0.],
+            [1., 0., 0.],
+            [1., 1., 0.],
+            [1., 7., 0.],
+            [1., 8., 0.],
+            [0., 8., 0.],
+        ]), closed=True)
+
+        reindexed, edge_mapping = original.reindexed(5, ret_edge_mapping=True)
+
+        expected = Polyline(np.array([
+            [0., 8., 0.],
+            [0., 0., 0.],
+            [1., 0., 0.],
+            [1., 1., 0.],
+            [1., 7., 0.],
+            [1., 8., 0.],
+        ]), closed=True)
+
+        np.testing.assert_array_almost_equal(reindexed.v, expected.v)
+        np.testing.assert_array_equal(original.segments[edge_mapping], reindexed.segments)

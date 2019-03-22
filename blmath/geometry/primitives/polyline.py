@@ -150,6 +150,31 @@ class Polyline(object):
         '''
         self.v = np.flipud(self.v)
 
+    def reindexed(self, index, ret_edge_mapping=False):
+        '''
+        Return a new Polyline which reindexes the callee polyline, which much
+        be closed, so the vertex with the given index becomes vertex 0.
+
+        ret_edge_mapping: if True, return an array that maps from old edge
+            indices to new.
+        '''
+        if not self.closed:
+            raise ValueError("Can't rotate an open polyline")
+
+        rotated_v = np.append(
+            self.v[index:], self.v[0:index], axis=0
+        )
+        result = Polyline(v=rotated_v, closed=True)
+        if ret_edge_mapping:
+            edge_mapping = np.append(
+                np.arange(index, len(self.v)),
+                np.arange(0, index),
+                axis=0
+            )
+            return result, edge_mapping
+        else:
+            return result
+
     def partition_by_length(self, max_length, ret_indices=False):
         '''
         Subdivide each line segment longer than max_length with
