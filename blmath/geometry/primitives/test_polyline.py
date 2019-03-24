@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
-from blmath.geometry import Polyline
+from blmath.numerics import vx
+from blmath.geometry import Polyline, Plane
 
 class TestPolyline(unittest.TestCase):
 
@@ -295,3 +296,71 @@ class TestPolyline(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(reindexed.v, expected.v)
         np.testing.assert_array_equal(original.segments[edge_mapping], reindexed.segments)
+
+    def test_cut_by_plane_closed(self):
+        original = Polyline(np.array([
+            [0., 0., 0.],
+            [1., 0., 0.],
+            [1., 1., 0.],
+            [1., 7., 0.],
+            [1., 8., 0.],
+            [0., 8., 0.],
+        ]), closed=True)
+
+        expected = Polyline(np.array([
+            [1., 7.5, 0.],
+            [1., 8., 0.],
+            [0., 8., 0.],
+            [0., 7.5, 0.],
+        ]), closed=False)
+        actual = original.cut_by_plane(
+            Plane(point_on_plane=np.array([0., 7.5, 0.]), unit_normal=vx.basis.y))
+
+        np.testing.assert_array_almost_equal(actual.v, expected.v)
+        self.assertFalse(actual.closed)
+
+        expected = Polyline(np.array([
+            [0., 7.5, 0.],
+            [0., 0., 0.],
+            [1., 0., 0.],
+            [1., 1., 0.],
+            [1., 7., 0.],
+            [1., 7.5, 0.],
+        ]), closed=False)
+        actual = original.cut_by_plane(
+            Plane(point_on_plane=np.array([0., 7.5, 0.]), unit_normal=vx.basis.neg_y))
+
+        np.testing.assert_array_almost_equal(actual.v, expected.v)
+        self.assertFalse(actual.closed)
+
+    def test_cut_by_plane_open(self):
+        original = Polyline(np.array([
+            [0., 0., 0.],
+            [1., 0., 0.],
+            [1., 1., 0.],
+            [1., 7., 0.],
+            [1., 8., 0.],
+        ]), closed=False)
+
+        expected = Polyline(np.array([
+            [1., 7.5, 0.],
+            [1., 8., 0.],
+        ]), closed=False)
+        actual = original.cut_by_plane(
+            Plane(point_on_plane=np.array([0., 7.5, 0.]), unit_normal=vx.basis.y))
+
+        np.testing.assert_array_almost_equal(actual.v, expected.v)
+        self.assertFalse(actual.closed)
+
+        expected = Polyline(np.array([
+            [0., 0., 0.],
+            [1., 0., 0.],
+            [1., 1., 0.],
+            [1., 7., 0.],
+            [1., 7.5, 0.],
+        ]), closed=False)
+        actual = original.cut_by_plane(
+            Plane(point_on_plane=np.array([0., 7.5, 0.]), unit_normal=vx.basis.neg_y))
+
+        np.testing.assert_array_almost_equal(actual.v, expected.v)
+        self.assertFalse(actual.closed)

@@ -1,4 +1,5 @@
 import numpy as np
+from blmath.numerics import vx
 from blmath.util.decorators import setter_property
 
 class Polyline(object):
@@ -242,3 +243,120 @@ class Polyline(object):
             return intersection_points, which_es.nonzero()[0]
         else:
             return intersection_points
+
+    def _cut_by_plane_open(self, plane, intersection_point, intersecting_edge_index):
+        intersecting_edge = self.e[intersecting_edge_index]
+        verts_of_intersecting_edge = self.v[intersecting_edge]
+        intersecting_segment_vector = self.segment_vectors[intersecting_edge_index]
+        # Do we want the edges before or after the intersecting edge? Determine that
+        # by checking whether the intersecting edge crosses from back to front or
+        # front to back. If back to front, keep the edges after it. If front to back,
+        # keep the edges before it. In either case, add a new edge for the portion of
+        # the intersecting edge that is in front.
+        #
+        # In case a vert of the intersecting edge lies on the plane, use a
+        # vector to identify which direction it's facing.
+        if vx.sproj(intersecting_segment_vector, onto=plane.normal) > 0:
+            new_v = np.vstack(
+                [intersection_point, self.v[intersecting_edge[1] :]]
+            )
+        else:
+            new_v = np.vstack(
+                [self.v[: intersecting_edge[0] + 1], intersection_point]
+            )
+        return Polyline(v=new_v, closed=False)
+
+    def _cut_by_plane_closed(self, plane):
+        '''
+        Precondition: there are exactly two points of intersection.
+        '''
+        # Reindex the polyline so it starts with a contiguous subchain that
+        # lies in front of or on the plane.
+        v_sign = plane.sign(self.v)
+        first_point_is_in_back = v_sign[0] == -1
+        if first_point_is_in_back:
+            # e.g. v_sign = np.array([-1, 1, 1, 1, -1, -1, -1])
+            points_on_or_in_front, = np.where(v_sign >= 0)
+            working = self.reindexed(index=points_on_or_in_front[0])
+        else:
+            # e.g. v_sign = np.array([1, -1, -1, -1, 1, 1, 1])
+            points_in_back, = np.where(v_sign < 0)
+            working = self.reindexed(index=points_in_back[-1] + 1)
+
+        # The part of the polyline we want to keep starts somewhere between
+        # the first vertex, which lies on the front, and the previous vertex,
+        # which lies on the back. Compute the starting point, which is the
+        # point of intersection. The exception is if `working.v[0]` happens to
+        # lie on the plane, in which case we don't need to synthesize a
+        # starting point.
+        v_sign = plane.sign(working.v)
+        if v_sign[0] == 0:
+            synthesized_start_point = None
+        else:
+            synthesized_start_point = plane.line_segment_xsection(
+                *working.segments[-1]
+            )
+
+        # Repeat for the endpoint of the part we want to keep.
+        points_on_or_in_front, = np.where(v_sign >= 0)
+        end_index = points_on_or_in_front[-1]
+        if v_sign[end_index] == 0:
+            synthesized_end_point = None
+        else:
+            synthesized_end_point = plane.line_segment_xsection(
+                *working.segments[end_index]
+            )
+
+        points_to_keep = working.v[0:end_index + 1]
+
+        def to_array(maybe_point):
+            if maybe_point is None:
+                return np.zeros((0, 3))
+            else:
+                return np.array([maybe_point])
+
+        return Polyline(
+            v=np.concatenate([
+                to_array(synthesized_start_point),
+                points_to_keep,
+                to_array(synthesized_end_point),
+            ]),
+            closed=False)
+
+    def cut_by_plane(self, plane):
+        """
+        Return a new Polyline which keeps only the part that is in front of the given
+        plane.
+
+        For open polylines, the plane must intersect the polyline exactly once.
+
+        For closed polylines, the plane must intersect the polylint exactly
+        twice, leaving a single contiguous segment in front.
+        """
+        intersection_points, edge_indices = self.intersect_plane(
+            plane, ret_edge_indices=True
+        )
+        orig_edge_indices = edge_indices
+        num_edge_indices = len(edge_indices)
+        if num_edge_indices == 0:
+            raise ValueError("Plane does not intersect polyline")
+        if self.closed:
+            if num_edge_indices != 2:
+                raise ValueError(
+                    "Plane intersects polyline at {} points; expected 2".format(
+                        num_edge_indices
+                    )
+                )
+            return self._cut_by_plane_closed(plane)
+        else:
+            if num_edge_indices > 1:
+                raise ValueError(
+                    "Plane intersects polyline at {} points; expected 1".format(
+                        num_edge_indices
+                    )
+                )
+            intersection_point = intersection_points[0]
+            intersecting_edge_index = edge_indices[0]
+            return self._cut_by_plane_open(
+                plane, intersection_point, intersecting_edge_index
+            )
