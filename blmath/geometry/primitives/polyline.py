@@ -159,12 +159,13 @@ class Polyline(object):
             indices to new.
         '''
         if not self.closed:
-            raise ValueError("Can't rotate an open polyline")
+            raise ValueError("Can't reindex an open polyline")
 
-        rotated_v = np.append(
-            self.v[index:], self.v[0:index], axis=0
+        result = Polyline(
+            v=np.append(self.v[index:], self.v[0:index], axis=0),
+            closed=True
         )
-        result = Polyline(v=rotated_v, closed=True)
+
         if ret_edge_mapping:
             edge_mapping = np.append(
                 np.arange(index, len(self.v)),
