@@ -1,16 +1,17 @@
 Changelog for the Metabolize fork
 =================================
 
+## 1.5.0 (Mar 24, 2019)
+
+- Move Plane.polyline_xsection to Polyline.intersect_plane.
+- Polyline: Add `reindexed()` method.
+- Polyline: Add `cut_by_plane()` method.
+
 ## 1.4.0 (Mar 22, 2019)
 
 - Plane.polyline_xsection: Add `ret_edge_indices` parameter
 - Polyline: Add convenience attributes `segments` and `segment_vectors`
 - Polyline: Add `flip()` method.
-
-As of this release, break from the upstream revision history and adopt ordinary
-semver.
-
-Identical to `1.2.5-post3`.
 
 ## 1.3.0 (Oct 4, 2018)
 
