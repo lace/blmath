@@ -223,3 +223,22 @@ class Polyline(object):
         '''
         from blmath.geometry.apex import apex
         return apex(self.v, axis)
+
+    def intersect_plane(self, plane, ret_edge_indices=False):
+        '''
+        Returns the points of intersection between the plane and any of the
+        edges of `polyline`, which should be an instance of Polyline.
+        '''
+        # Identify edges with endpoints that are not on the same side of the plane
+        sgn_dists = plane.signed_distance(self.v)
+        which_es = np.abs(np.sign(sgn_dists)[self.e].sum(axis=1)) != 2
+        # For the intersecting edges, compute the distance of the endpoints to the plane
+        endpoint_distances = np.abs(sgn_dists[self.e[which_es]])
+        # Normalize the rows of endpoint_distances
+        t = endpoint_distances / endpoint_distances.sum(axis=1)[:, np.newaxis]
+        # Take a weighted average of the endpoints to obtain the points of intersection
+        intersection_points = ((1. - t[:, :, np.newaxis]) * self.segments[which_es]).sum(axis=1)
+        if ret_edge_indices:
+            return intersection_points, which_es.nonzero()[0]
+        else:
+            return intersection_points

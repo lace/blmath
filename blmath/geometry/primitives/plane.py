@@ -193,22 +193,9 @@ class Plane(object):
 
     def polyline_xsection(self, polyline, ret_edge_indices=False):
         '''
-        Returns the points of intersection between the plane and any of the
-        edges of `polyline`, which should be an instance of Polyline.
+        Deprecated.
         '''
-        # Identify edges with endpoints that are not on the same side of the plane
-        sgn_dists = self.signed_distance(polyline.v)
-        which_es = np.abs(np.sign(sgn_dists)[polyline.e].sum(axis=1)) != 2
-        # For the intersecting edges, compute the distance of the endpoints to the plane
-        endpoint_distances = np.abs(sgn_dists[polyline.e[which_es]])
-        # Normalize the rows of endpoint_distances
-        t = endpoint_distances / endpoint_distances.sum(axis=1)[:, np.newaxis]
-        # Take a weighted average of the endpoints to obtain the points of intersection
-        intersection_points = ((1. - t[:, :, np.newaxis]) * polyline.v[polyline.e[which_es]]).sum(axis=1)
-        if ret_edge_indices:
-            return intersection_points, which_es.nonzero()[0]
-        else:
-            return intersection_points
+        return polyline.intersect_plane(self, ret_edge_indices=ret_edge_indices)
 
     def line_xsection(self, pt, ray):
         return self._line_xsection(np.asarray(pt).ravel(), np.asarray(ray).ravel())
