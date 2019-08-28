@@ -54,6 +54,8 @@ class Value(object):
         return self.value
     def __int__(self):
         return int(self.value)
+    def __round__(self, places):
+        return round(self.value, places)
 
     def __getattr__(self, name):
         from blmath import units as unit_conversions
@@ -97,6 +99,8 @@ class Value(object):
         return Value(float(self._comparable(other)) - self.value, self.units)
 
     def __div__(self, other):
+        return self.__truediv__(other)
+    def __truediv__(self, other):
         if isinstance(other, Value):
             try:
                 other_comparable = self._comparable(other)
@@ -105,6 +109,8 @@ class Value(object):
             return Value(self.value / other_comparable.value, None)
         return Value(self.value / other, self.units)
     def __rdiv__(self, other):
+        return self.__rtruediv__(other)
+    def __rtruediv__(self, other):
         raise ValueError("%s / %s... Wat." % (other, self))
 
     def __floordiv__(self, other):

@@ -99,6 +99,8 @@ class CompositeTransform(object):
           forward or reverse matrices are used.
 
         '''
+        import six
+
         if from_range is not None:
             start, stop = from_range  # from_range is defined as None, a non-sequence, but when it's not None, it's always a sequence. pylint: disable=unpacking-non-sequence
             selected_transforms = self.transforms[start:stop]
@@ -115,7 +117,7 @@ class CompositeTransform(object):
         if not len(matrices): # pylint: disable=len-as-condition
             return np.eye(4)
 
-        matrix = reduce(np.dot, matrices)
+        matrix = six.moves.reduce(np.dot, matrices)
         return matrix if reverse else matrix.T
 
     def append_transform4(self, forward, reverse=None):

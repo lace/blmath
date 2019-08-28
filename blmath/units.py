@@ -52,7 +52,7 @@ class Units(object):
         'length', 'weight', 'angle, 'time', 'time_rate'.
 
         '''
-        return list(set([item[0] for item in self._units.itervalues()]))
+        return list(set([item[0] for item in self._units.values()]))
 
     def units_class(self, units):
         '''
@@ -71,7 +71,7 @@ class Units(object):
         Return a list of all units in uclass, where uclass is e.g.
         length', 'weight', 'angle, 'time', 'time_rate'.
         '''
-        return [key for key, (uclass_0, _) in self._units.iteritems() if uclass_0 == uclass]
+        return [key for key, (uclass_0, _) in self._units.items() if uclass_0 == uclass]
 
     @property
     def lengths(self):
@@ -115,7 +115,10 @@ class Units(object):
         either 'metric' or 'united_states'.
 
         '''
-        return dict(self._default_units[unit_system].items() + exceptions.items())
+        result = dict()
+        result.update(self._default_units[unit_system])
+        result.update(exceptions)
+        return result
 
     def raw(self, units):
         '''
@@ -179,8 +182,8 @@ class Units(object):
             [100, 200, 300]
 
         '''
-        factor = self.factor(from_units, to_units) # FIXME pylint: disable=redefined-outer-name
-        return map(lambda x: factor * x, a_list)
+        scale_factor = self.factor(from_units, to_units)
+        return [scale_factor * x for x in a_list]
 
     def convert_to_default(self, value, from_units, defaults):
         '''

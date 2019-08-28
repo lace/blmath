@@ -117,8 +117,8 @@ class TestValueClass(unittest.TestCase):
     def test_other_numeric_methods(self):
         x = Value(25, 'cm')
         self.assertEqual(str(x), "25.000000 cm")
-        self.assertEqual(x / 2, Value(12.5, 'cm'))
-        self.assertIsInstance(x / 2, Value)
+        self.assertEqual(x / 2.0, Value(12.5, 'cm'))
+        self.assertIsInstance(x / 2.0, Value)
         self.assertEqual(x / Value(1, 'cm'), Value(25, None))
         self.assertEqual(x / Value(1, 'm'), Value(0.25, None))
         self.assertEqual(x // 2, Value(12, 'cm'))
@@ -130,7 +130,7 @@ class TestValueClass(unittest.TestCase):
         with self.assertRaises(AttributeError):
             _ = x ** 2
         with self.assertRaises(ValueError):
-            _ = 2 / x
+            _ = 2.0 / x
         self.assertEqual(+x, Value(25, 'cm'))
         self.assertIsInstance(+x, Value)
         self.assertEqual(-x, Value(-25, 'cm'))
@@ -152,10 +152,15 @@ class TestValueClass(unittest.TestCase):
 class TestValueSerialization(unittest.TestCase):
 
     def test_basic_serialization(self):
+        import six
+
         x = Value(25, 'cm')
         x_json = json.dumps(x)
 
-        self.assertEqual(x_json, '{"__value__": {"units": "cm", "value": 25.0}}')
+        if six.PY2:
+            self.assertEqual(x_json, '{"__value__": {"units": "cm", "value": 25.0}}')
+        else:
+            self.assertEqual(x_json, '{"__value__": {"value": 25.0, "units": "cm"}}')
         x_obj = json.loads(x_json)
         self.assertEqual(x, x_obj)
 

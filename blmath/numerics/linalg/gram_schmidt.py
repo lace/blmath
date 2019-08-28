@@ -58,13 +58,13 @@ def proj(u, v):
 def main():
     v = np.array([[3, 1], [2, 2]], dtype=float)
 
-    print orthogonalize(v)
-    print orthonormalize(v)
+    print(orthogonalize(v))
+    print(orthonormalize(v))
 
     v = np.array([[1., 1., 1.], [2., 1., 0.], [5., 1., 3.]])
 
-    print orthogonalize(v)
-    print orthonormalize(v)
+    print(orthogonalize(v))
+    print(orthonormalize(v))
 
 
 if __name__ == '__main__':

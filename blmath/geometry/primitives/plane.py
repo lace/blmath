@@ -358,7 +358,7 @@ class Plane(object):
 
                 # counting the number of vertices with odd degree
                 odd = [x for x in self.d if len(self.d[x])&1]
-                odd.append(self.d.keys()[0])
+                odd.append(list(self.d.keys())[0])
                 if not allow_multiple_connected_components and len(odd) > 3:
                     return None
                 stack = [odd[0]]
@@ -469,7 +469,7 @@ def main():
 
     lines = [
         polyline.as_lines()
-        for polyline in xs1, xs2, xs3, xs4
+        for polyline in [xs1, xs2, xs3, xs4]
     ]
 
     if args.cloud:
