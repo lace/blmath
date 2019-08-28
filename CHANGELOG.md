@@ -1,6 +1,11 @@
 Changelog for the Metabolize fork
 =================================
 
+## 1.6.0 (Aug 28, 2019)
+
+- Update for Python 3.
+
+
 ## 1.5.0 (Mar 24, 2019)
 
 - Move Plane.polyline_xsection to Polyline.intersect_plane.
