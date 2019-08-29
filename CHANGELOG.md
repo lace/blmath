@@ -1,6 +1,11 @@
 Changelog for the Metabolize fork
 =================================
 
+## 1.6.1 (Aug 29, 2019)
+
+- TriNormalsScaled: Fix for Python 3
+
+
 ## 1.6.0 (Aug 28, 2019)
 
 - Update for Python 3.
