@@ -132,7 +132,7 @@ except ImportError:
             shape = (self.f.size, self.v.r.size)
             dr_vplus, dr_vminus = [
                 sp.csc_matrix((ones, np.vstack([IS, item])), shape=shape)
-                for item in vplus3, vminus3  # FIXME change item to a DAMP
+                for item in [vplus3, vminus3]  # FIXME change item to a DAMP
             ]
             return dr_vplus - dr_vminus
 
