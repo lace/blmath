@@ -481,7 +481,7 @@ def main():
 
     lines = [
         polyline.as_lines()
-        for polyline in xs1, xs2, xs3, xs4
+        for polyline in (xs1, xs2, xs3, xs4)
     ]
 
     if args.cloud:
