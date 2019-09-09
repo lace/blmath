@@ -1,31 +1,26 @@
-metablmath
-==========
+blmath
+======
 
-[![pip install](https://img.shields.io/badge/pip%20install-metablmath-f441b8.svg?style=flat-square)][pypi]
-[![version](https://img.shields.io/pypi/v/metablmath.svg?style=flat-square)][pypi]
-[![python versions](https://img.shields.io/pypi/pyversions/metablmath.svg?style=flat-square)][pypi]
-[![build status](https://img.shields.io/circleci/project/github/metabolize/blmath/master.svg?style=flat-square)][circle]
-[![last commit](https://img.shields.io/github/last-commit/metabolize/blmath.svg?style=flat-square)][commits]
-[![open pull requests](https://img.shields.io/github/issues-pr/metabolize/blmath.svg?style=flat-square)][pull requests]
+[![version](https://img.shields.io/pypi/v/blmath?style=flat-square)][pypi]
+[![python versions](https://img.shields.io/pypi/pyversions/blmath?style=flat-square)][pypi]
+[![build status](https://img.shields.io/circleci/project/github/lace/blmath/master.svg?style=flat-square)][circle]
 
-This is an active fork of [blmath][upstream], a collection math-related utilities developed at Body Labs.
+Collection of math-related utilities developed at Body Labs.
 
-The fork's goals are moderate:
+This is a legacy library in active maintenance. The goals are:
 
 - Keep the library working in current versions of Python and other tools.
 - Make bug fixes.
 - Provide API stability and backward compatibility with the upstream version.
-- Add additional functionality which relates well to what is here.
-- Respond to community contributions.
 
-It's used by related forks such as [lace][].
+The main thrust is to transition the functionality in this library (and the
+code which depends on it, such as [lace][] to new libraries include [vg][] and
+[polliwog][]. In general, new functionality should be added in the new
+libraries. As needed, additional libraries can be added to the lace org.
 
-[upstream]: https://github.com/bodylabs/blmath
-[circle]: https://circleci.com/gh/metabolize/blmath
-[pypi]: https://pypi.org/project/metablmath/
-[pull requests]: https://github.com/metabolize/blmath/pulls
-[commits]: https://github.com/metabolize/blmath/commits/master
-[lace]: https://github.com/metabolize/lace
+[circle]: https://circleci.com/gh/lace/blmath
+[pypi]: https://pypi.org/project/blmath/
+[lace]: https://github.com/lace/lace
 
 
 Installation
@@ -45,7 +40,7 @@ On Linux:
 ### Install the library
 
 ```sh
-pip install metablmath
+pip install blmath
 ```
 
 And import it just like the upstream library:
@@ -165,8 +160,8 @@ rake lint
 Contribute
 ----------
 
-- Issue Tracker: https://github.com/metabolize/blmath/issues
-- Source Code: https://github.com/metabolize/blmath
+- Issue Tracker: https://github.com/lace/blmath/issues
+- Source Code: https://github.com/lace/blmath
 
 Pull requests welcome!
 
@@ -183,11 +178,16 @@ Acknowledgements
 This collection was developed at Body Labs and includes a combination of code
 developed at Body Labs, from legacy code and significant new portions by
 [Eric Rachlin][], [Alex Weiss][], and [Paul Melnikow][]. It was extracted
-from the Body Labs codebase and open-sourced by [Alex Weiss][].
+from the Body Labs codebase and open-sourced by [Alex Weiss][]. In 2018 it was
+[forked by Paul Melnikow][fork] and published as [metablmath][]. The fork has
+subsequently merged with the original.
+
 
 [eric rachlin]: https://github.com/eerac
 [alex weiss]: https://github.com/algrs
 [paul melnikow]: https://github.com/paulmelnikow
+[fork]: https://github.com/metabolize/blmath
+[metablmath]: https://pypi.org/project/metablmath/
 
 
 License
