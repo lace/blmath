@@ -37,13 +37,13 @@ else:
     include_dirs = [np.get_include(), '/usr/include/suitesparse']
 
 setup(
-    name='metablmath',
+    name='blmath',
     version=importlib.import_module('blmath').__version__,
-    author='Body Labs',
-    author_email='alex@bodylabs.com',
-    description='Active fork of blmath, a collection math-related utilities developed at Body Labs',
+    author='Body Labs, Metabolize',
+    author_email='github@paulmelnikow.com',
+    description='Collection math-related utilities developed at Body Labs',
     long_description=long_description,
-    url='https://github.com/metabolize/blmath',
+    url='https://github.com/lace/blmath',
     license='MIT',
     packages=[
         'blmath',
