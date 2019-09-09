@@ -181,8 +181,9 @@ This collection was developed at Body Labs and includes a combination of code
 developed at Body Labs, from legacy code and significant new portions by
 [Eric Rachlin][], [Alex Weiss][], and [Paul Melnikow][]. It was extracted
 from the Body Labs codebase and open-sourced by [Alex Weiss][]. In 2018 it was
-[forked by Paul Melnikow][fork] and published as [metablmath][]. The fork has
-subsequently merged with the original.
+[forked by Paul Melnikow][fork] and published as [metablmath][]. Thanks to a
+repository and package transfer from Body Labs, the fork has been merged back
+into the original.
 
 
 [eric rachlin]: https://github.com/eerac
