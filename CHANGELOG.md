@@ -1,5 +1,12 @@
-Changelog for the Metabolize fork
-=================================
+Changelog
+=========
+
+## 1.6.2 (Sep 9, 2019)
+
+- Merge Metabolize fork back into [original repo at its new home][repo].
+
+[repo]: https://github.com/lace/blmath
+
 
 ## 1.6.1 (Aug 29, 2019)
 
@@ -17,11 +24,13 @@ Changelog for the Metabolize fork
 - Polyline: Add `reindexed()` method.
 - Polyline: Add `cut_by_plane()` method.
 
+
 ## 1.4.0 (Mar 22, 2019)
 
 - Plane.polyline_xsection: Add `ret_edge_indices` parameter
 - Polyline: Add convenience attributes `segments` and `segment_vectors`
 - Polyline: Add `flip()` method.
+
 
 ## 1.3.0 (Oct 4, 2018)
 
