@@ -21,6 +21,8 @@ libraries. As needed, additional libraries can be added to the lace org.
 [circle]: https://circleci.com/gh/lace/blmath
 [pypi]: https://pypi.org/project/blmath/
 [lace]: https://github.com/lace/lace
+[vg]: https://github.com/lace/vg
+[polliwog]: https://github.com/lace/polliwog
 
 
 Installation
