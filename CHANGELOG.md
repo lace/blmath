@@ -6,7 +6,7 @@ Changelog
 - Remove reliance on baiji for a single test asset
 - blmath.numerics.linalg.cholmod working in python 3
 - Set up tox to run tests locally across python versions
-- Removed conditional import from OpenDR
+- Removed conditional import from OpenDR (and all references to OpenDR)
 
 ## 1.6.2 (Sep 9, 2019)
 

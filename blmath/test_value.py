@@ -156,8 +156,6 @@ class TestValueClass(unittest.TestCase):
 class TestValueSerialization(unittest.TestCase):
 
     def test_basic_serialization(self):
-        import six
-
         x = Value(25, 'cm')
         x_json = json.dumps(x)
 
