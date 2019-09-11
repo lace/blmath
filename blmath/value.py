@@ -55,7 +55,7 @@ class Value(object):
     def __int__(self):
         return int(self.value)
     def __round__(self, places):
-        return round(self.value, places)
+        return Value(round(self.value, places), self.units)
 
     def __getattr__(self, name):
         from blmath import units as unit_conversions

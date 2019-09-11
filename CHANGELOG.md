@@ -1,6 +1,13 @@
 Changelog
 =========
 
+## 1.6.3 (Sep 9, 2019)
+
+- Remove reliance on baiji for a single test asset
+- blmath.numerics.linalg.cholmod working in python 3
+- Set up tox to run tests locally across python versions
+- Removed conditional import from OpenDR
+
 ## 1.6.2 (Sep 9, 2019)
 
 - Merge Metabolize fork back into [original repo at its new home][repo].

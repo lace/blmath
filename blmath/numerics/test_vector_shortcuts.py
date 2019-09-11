@@ -191,14 +191,14 @@ class TestVector(unittest.TestCase):
 
     def test_pad_with_wrong_dimensions(self):
         # NB: on windows, the sizes here will render as 3L, not 3:
-        with self.assertRaisesRegexp(ValueError, '^Invalid shape \(3L?, 4L?\): pad expects nx3$'): # FIXME pylint: disable=anomalous-backslash-in-string
+        with self.assertRaisesRegexp(ValueError, r'^Invalid shape \(3L?, 4L?\): pad expects nx3$'): # FIXME pylint: disable=anomalous-backslash-in-string
             vx.pad_with_ones(np.array([
                 [1., 2., 3., 42.],
                 [2., 3., 4., 42.],
                 [5., 6., 7., 42.],
             ]))
 
-        with self.assertRaisesRegexp(ValueError, '^Invalid shape \(3L?,\): pad expects nx3$'): # FIXME pylint: disable=anomalous-backslash-in-string
+        with self.assertRaisesRegexp(ValueError, r'^Invalid shape \(3L?,\): pad expects nx3$'): # FIXME pylint: disable=anomalous-backslash-in-string
             vx.pad_with_ones(np.array([1., 2., 3.]))
 
     def test_unpad(self):
@@ -216,14 +216,14 @@ class TestVector(unittest.TestCase):
         )
 
         # NB: on windows, the sizes here will render as 3L, not 3:
-        with self.assertRaisesRegexp(ValueError, '^Invalid shape \(3L?, 3L?\): unpad expects nx4$'): # FIXME pylint: disable=anomalous-backslash-in-string
+        with self.assertRaisesRegexp(ValueError, r'^Invalid shape \(3L?, 3L?\): unpad expects nx4$'): # FIXME pylint: disable=anomalous-backslash-in-string
             vx.unpad(np.array([
                 [1., 2., 3.],
                 [2., 3., 4.],
                 [5., 6., 7.],
             ]))
 
-        with self.assertRaisesRegexp(ValueError, '^Invalid shape \(4L?,\): unpad expects nx4$'): # FIXME pylint: disable=anomalous-backslash-in-string
+        with self.assertRaisesRegexp(ValueError, r'^Invalid shape \(4L?,\): unpad expects nx4$'): # FIXME pylint: disable=anomalous-backslash-in-string
             vx.unpad(np.array([1., 2., 3., 4.]))
 
         with self.assertRaisesRegexp(ValueError, '^Expected a column of ones$'):
