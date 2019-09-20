@@ -13,6 +13,10 @@ typedef long Int;
 #define NATURAL_ORDER 0
 #define LOWER_TRIANGULAR -1
 
+#if PY_MAJOR_VERSION >= 3
+#define PyInt_AsLong PyLong_AsLong
+#endif
+
 static PyObject * cholmod_lchol_c(PyObject *self, PyObject *args);
 
 static PyMethodDef CholmodMethods[] = {
@@ -115,12 +119,43 @@ void sputil_config (cholmod_common *cm)
     }
 }
 
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef moduledef = {
+    PyModuleDef_HEAD_INIT,
+    "cholmod",     /* m_name */
+    "cholmod methods",  /* m_doc */
+    -1,                  /* m_size */
+    CholmodMethods,    /* m_methods */
+    NULL,                /* m_reload */
+    NULL,                /* m_traverse */
+    NULL,                /* m_clear */
+    NULL,                /* m_free */
+};
+#endif
 
-PyMODINIT_FUNC
-initcholmod(void)
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC PyInit_cholmod(void)
+#else
+PyMODINIT_FUNC initcholmod(void)
+#endif
 {
-    (void) Py_InitModule("cholmod", CholmodMethods);
+    PyObject *m;
+
+#if PY_MAJOR_VERSION >= 3
+    m = PyModule_Create(&moduledef);
+    if (m == NULL)
+        return NULL;
+#else
+    m = Py_InitModule("cholmod", CholmodMethods);
+    if (m == NULL)
+        return;
+#endif
+
     import_array();
+
+#if PY_MAJOR_VERSION >= 3
+    return m;
+#endif
 }
 
 

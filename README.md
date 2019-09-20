@@ -158,6 +158,15 @@ rake unittest
 rake lint
 ```
 
+Tests are configured to run in both python 2.7 and 3.6 locally via tox as well as in CircleCI.
+To run tests in multiple versions of python, run `tox`:
+
+```sh
+pip install -r requirements_dev.txt
+tox
+```
+
+You need to make sure that `python2.7` and `python3.6` are valid commands; this can be done in pyenv via `pyenv global 3.6.5 2.7.15`
 
 Contribute
 ----------

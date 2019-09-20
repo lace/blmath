@@ -1,4 +1,5 @@
 import unittest
+import warnings
 import numpy as np
 
 class TestCoercion(unittest.TestCase):
@@ -42,7 +43,11 @@ class TestCoercion(unittest.TestCase):
                 as_numeric_array(v, shape=(3,), allow_none=False)
 
         for v in good_iff_allow_none_and_empty_as_none:
-            as_numeric_array(v, shape=(3,), allow_none=True, empty_as_none=True)
+            with warnings.catch_warnings(record=True) as w:
+                warnings.simplefilter("always")
+                as_numeric_array(v, shape=(3,), allow_none=True, empty_as_none=True)
+                assert len(w) == 1
+                assert issubclass(w[-1].category, DeprecationWarning)
             with self.assertRaises(ValueError):
                 as_numeric_array(v, shape=(3,), allow_none=False, empty_as_none=True)
 

@@ -1,20 +1,18 @@
 import numpy as np
 import chumpy as ch
 
-try:
-    from opendr.geometry import Rodrigues  # This lets us import blmath.geometry.normals.NormalizedNx3 etc. whether or not opendr is available. pylint: disable=unused-import
-except ImportError:
-    class Rodrigues(ch.Ch):
-        dterms = 'rt'
 
-        def compute_r(self):
-            import cv2
-            return cv2.Rodrigues(self.rt.r)[0]
+class Rodrigues(ch.Ch):
+    dterms = 'rt'
 
-        def compute_dr_wrt(self, wrt):
-            import cv2
-            if wrt is self.rt:
-                return cv2.Rodrigues(self.rt.r)[1].T
+    def compute_r(self):
+        import cv2
+        return cv2.Rodrigues(self.rt.r)[0]
+
+    def compute_dr_wrt(self, wrt):
+        import cv2
+        if wrt is self.rt:
+            return cv2.Rodrigues(self.rt.r)[1].T
 
 
 def rodrigues(r, calculate_jacobian=False):

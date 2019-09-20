@@ -1,5 +1,7 @@
+import six
 import numpy as np
 from blmath.numerics import vx
+
 
 class Plane(object):
     '''
@@ -358,7 +360,7 @@ class Plane(object):
 
                 # counting the number of vertices with odd degree
                 odd = [x for x in self.d if len(self.d[x])&1]
-                odd.append(list(self.d.keys())[0])
+                odd.append(next(six.iterkeys(self.d)))
                 if not allow_multiple_connected_components and len(odd) > 3:
                     return None
                 stack = [odd[0]]
