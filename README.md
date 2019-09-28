@@ -2,6 +2,7 @@ blmath
 ======
 
 [![version](https://img.shields.io/pypi/v/blmath?style=flat-square)][pypi]
+[![license](https://img.shields.io/pypi/l/blmath?style=flat-square)][pypi]
 [![python versions](https://img.shields.io/pypi/pyversions/blmath?style=flat-square)][pypi]
 [![build status](https://img.shields.io/circleci/project/github/lace/blmath/master.svg?style=flat-square)][circle]
 
