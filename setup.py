@@ -44,7 +44,7 @@ setup(
     description='Collection math-related utilities developed at Body Labs',
     long_description=long_description,
     url='https://github.com/lace/blmath',
-    license='MIT',
+    license='BSD-2-Clause',
     packages=[
         'blmath',
         'blmath/geometry',
