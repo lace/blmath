@@ -2,6 +2,7 @@ blmath
 ======
 
 [![version](https://img.shields.io/pypi/v/blmath?style=flat-square)][pypi]
+[![license](https://img.shields.io/pypi/l/blmath?style=flat-square)][pypi]
 [![python versions](https://img.shields.io/pypi/pyversions/blmath?style=flat-square)][pypi]
 [![build status](https://img.shields.io/circleci/project/github/lace/blmath/master.svg?style=flat-square)][circle]
 
@@ -14,7 +15,7 @@ This is a legacy library in active maintenance. The goals are:
 - Provide API stability and backward compatibility with the upstream version.
 
 The main thrust is to transition the functionality in this library (and the
-code which depends on it, such as [lace][] to new libraries include [vg][] and
+code which depends on it, such as [lace][]) to new libraries such as [vg][] and
 [polliwog][]. In general, new functionality should be added in the new
 libraries. As needed, additional libraries can be added to the lace org.
 
