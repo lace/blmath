@@ -14,7 +14,7 @@ This is a legacy library in active maintenance. The goals are:
 - Provide API stability and backward compatibility with the upstream version.
 
 The main thrust is to transition the functionality in this library (and the
-code which depends on it, such as [lace][] to new libraries include [vg][] and
+code which depends on it, such as [lace][]) to new libraries include [vg][] and
 [polliwog][]. In general, new functionality should be added in the new
 libraries. As needed, additional libraries can be added to the lace org.
 
