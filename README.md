@@ -15,16 +15,16 @@ package and now are maintained on their own:**
 * **[polliwog][]** provides low-level functions for working with 2D and 3D
   geometry, optimized for cloud computation.
     * Was `blmath.geometry`
-* **[entente][]** provides functions for working with meshes and pointclouds
-  having vertexwise correspondence.
-    * Was `blmath.geometry.transform.find_rigid_transform`
 * **[ounce][]** is a simple package for manipulating units of measure.
     * Was `blmath.units`
+* **[entente][]** provides functions for working with meshes and pointclouds
+  having vertexwise correspondence.
+    * Includes `blmath.geometry.transform.find_rigid_transform`
 
-Also related is **[lacecore][]**, the primary successor to **[lace][]**, which
+Also related is **[lacecore][]** (the primary successor to [lace][]) which
 provides polygonal meshes optimized for cloud computation.
 
-And special mention to **[hyla][]**, a TypeScript counterpart to polliwog.
+And special mention to **[hyla][]**, a TypeScript counterpart to [polliwog][].
 
 
 [lacecore]: https://github.com/lace/lacecore/
