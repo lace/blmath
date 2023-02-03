@@ -10,15 +10,16 @@ Collection of math-related utilities developed at Body Labs.
 **This library is deprecated. The following libraries were broken out from this
 package and now are maintained on their own:**
 
-* **[vg][]** is a vector-geometry toolbelt for 3D points and vectors (was
-  `blmath.numerics.vector_shortcuts`).
+* **[vg][]** is a vector-geometry toolbelt for 3D points and vectors.
+   * Was `blmath.numerics.vector_shortcuts`
 * **[polliwog][]** provides low-level functions for working with 2D and 3D
-  geometry, optimized for cloud computation (was `blmath.geometry`).
+  geometry, optimized for cloud computation.
+    * Was `blmath.geometry`
 * **[entente][]** provides functions for working with meshes and pointclouds
-  having vertexwise correspondence (including
-  `blmath.geometry.transform.find_rigid_transform`).
-* **[ounce][]** is a simple package for manipulating units of measure (was
-  `blmath.units`).
+  having vertexwise correspondence.
+    * Was `blmath.geometry.transform.find_rigid_transform`
+* **[ounce][]** is a simple package for manipulating units of measure.
+    * Was `blmath.units`
 
 Also related is **[lacecore][]**, the primary successor to **[lace][]**, which
 provides polygonal meshes optimized for cloud computation.
