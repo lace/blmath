@@ -24,7 +24,8 @@ package and now are maintained on their own:**
 Also related is **[lacecore][]** (the primary successor to [lace][]) which
 provides polygonal meshes optimized for cloud computation.
 
-And special mention to **[hyla][]**, a TypeScript counterpart to [polliwog][].
+Special mention is given to **[hyla][]**, a TypeScript counterpart to
+[polliwog][].
 
 
 [lacecore]: https://github.com/lace/lacecore/
